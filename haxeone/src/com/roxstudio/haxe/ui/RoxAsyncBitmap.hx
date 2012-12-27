@@ -1,69 +1,57 @@
 package com.roxstudio.haxe.ui;
 
-import nme.events.MouseEvent;
+import com.roxstudio.haxe.ui.UiUtil;
+import nme.display.Bitmap;
+import nme.display.DisplayObject;
 import com.roxstudio.haxe.game.ImageUtil;
-import nme.display.Loader;
 import nme.display.BitmapData;
-import nme.events.Event;
-import com.eclecticdesignstudio.spritesheet.Spritesheet;
-import com.eclecticdesignstudio.spritesheet.AnimatedSprite;
-import com.eclecticdesignstudio.spritesheet.data.BehaviorData;
-import com.eclecticdesignstudio.spritesheet.data.SpritesheetFrame;
-import nme.net.URLLoaderDataFormat;
-import nme.net.URLRequest;
-import nme.net.URLLoader;
 import nme.display.Sprite;
+
+using com.roxstudio.haxe.ui.UiUtil;
 
 class RoxAsyncBitmap extends Sprite {
 
-    public var loaded: Bool = false;
+    public var loader(default, null): RoxBitmapLoader;
+    public var loadingDisplay: DisplayObject;
+    public var errorDisplay: DisplayObject;
 
-    private static var loading: Spritesheet;
+    private var minWidth: Float = 0;
+    private var minHeight: Float = 0;
 
-    private var loader: URLLoader;
-    private var prevTime: Int;
-
-    public function new(url: String, ?width: Null<Float>, ?height: Null<Float>) {
+    public function new(url: String, ?minWidth: Float = 0, ?minHeight: Float = 0,
+                        ?loadingDisplay: DisplayObject, ?errorDisplay: DisplayObject) {
         super();
-        loader = new URLLoader();
-        loader.dataFormat = URLLoaderDataFormat.BINARY;
-        loader.load(new URLRequest(url));
-        loader.addEventListener(Event.COMPLETE, complete);
-        addEventListener(Event.ENTER_FRAME, update);
-        addChild(getAnim());
-    }
-
-    private function complete(e) {
-        trace("completed");
-        var ldr = new Loader();
-        ldr.loadBytes(cast(loader.data));
-        loader.removeEventListener(Event.COMPLETE, complete);
-        loader = null;
-        removeEventListener(Event.ENTER_FRAME, update);
-        removeChildAt(0);
-        addChild(ldr.content);
-        loaded = true;
-    }
-
-    private function getAnim() {
-        if (loading == null) {
-            loading = new Spritesheet(ImageUtil.getBitmapData("res/progress.png"));
-            var frames: Array<Int> = [];
-            for (i in 0...12) {
-                loading.addFrame(new SpritesheetFrame(100 * i, 0, 100, 100));
-                frames.push(i);
-            }
-            loading.addBehavior(new BehaviorData("loading", frames, true, 10, 0, 0));
+        this.minWidth = minWidth;
+        this.minHeight = minHeight;
+        this.loadingDisplay = loadingDisplay;
+        this.errorDisplay = errorDisplay;
+        loader = ImageUtil.getBitmapLoader(url);
+        if (loader.status == RoxBitmapLoader.LOADING) {
+            loader.load(update);
         }
-        var anim = new AnimatedSprite(loading);
-        anim.showBehavior("loading");
-        return anim;
+        update();
     }
 
-    private function update(e) {
-        var currTime = nme.Lib.getTimer();
-        var deltaTime: Int = currTime - prevTime;
-        cast(getChildAt(0), AnimatedSprite).update(deltaTime);
-        prevTime = currTime;
+    private function update() {
+        var dp: DisplayObject = switch (loader.status) {
+            case RoxBitmapLoader.READY:
+                new Bitmap(loader.bitmapData);
+            case RoxBitmapLoader.ERROR:
+                errorDisplay;
+            case RoxBitmapLoader.LOADING:
+                loadingDisplay;
+        }
+        if (numChildren > 0) removeChildAt(0);
+        if (dp != null) addChild(dp);
+        if (width > minWidth) minWidth = width;
+        if (height > minHeight) minHeight = height;
+        if (minWidth > width || minHeight > height) {
+            graphics.beginFill(0xFFFFFF, 0.005);
+            graphics.drawRect(0, 0, minWidth, minHeight);
+            graphics.endFill();
+        }
+        if (dp != null) dp.rox_move((minWidth - dp.width) / 2, (minHeight - dp.height) / 2);
+//        trace(">2>min="+minWidth+","+minHeight+",this="+this.width+","+this.height+(dp!=null?",dp="+dp.width+","+dp.height:""));
     }
+
 }

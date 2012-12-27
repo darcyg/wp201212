@@ -26,34 +26,38 @@ class RoxNinePatch extends Sprite {
         if (vScale == null) vScale = hScale;
         this.hScale = hScale;
         this.vScale = vScale;
-        var bmd = data.bitmapData;
-        var w = bmd.width, h = bmd.height;
+        var w = data.clipRect.width, h = data.clipRect.height;
         var g = data.ninePatchGrid;
-        var ngw = w * hScale - w + g.width;
-        var ngh = h * vScale - h + g.height;
-        var vts = new Vector<Float>();
-        var hval = [0.0, g.x, g.x + ngw, w * hScale];
-        var vval = [0.0, g.y, g.y + ngh, h * vScale];
-        for (i in 0...4) {
-            for (j in 0...4) {
-                vts.push(hval[j]);
-                vts.push(vval[i]);
-            }
-        }
         graphics.clear();
-        graphics.beginBitmapFill(bmd, null, false, true);
-        graphics.drawTriangles(vts, data.ids, data.uvs);
+        if (data.bitmapData != null) {
+            var ngw = w * hScale - w + g.width;
+            var ngh = h * vScale - h + g.height;
+            var vts = new Vector<Float>();
+            var hval = [0.0, g.x, g.x + ngw, w * hScale];
+            var vval = [0.0, g.y, g.y + ngh, h * vScale];
+            for (i in 0...4) {
+                for (j in 0...4) {
+                    vts.push(hval[j]);
+                    vts.push(vval[i]);
+                }
+            }
+            graphics.beginBitmapFill(data.bitmapData, null, false, true);
+            graphics.drawTriangles(vts, data.ids, data.uvs);
+        } else { // fake-transparent background
+            graphics.beginFill(0xFFFFFF, 0.005);
+            graphics.drawRect(0, 0, w * hScale, h * vScale);
+        }
         graphics.endFill();
         return this;
     }
 
     public inline function setDimension(inWidth: Float, inHeight: Float) : RoxNinePatch {
-        return setScale(inWidth / data.bitmapData.width, inHeight / data.bitmapData.height);
+        return setScale(inWidth / data.clipRect.width, inHeight / data.clipRect.height);
     }
 
     public inline function getContentRect() : Rectangle {
-        var g = data.contentGrid, bmd = data.bitmapData;
-        return new Rectangle(g.x, g.y, bmd.width * (hScale - 1) + g.width, bmd.height * (vScale - 1) + g.height);
+        var g = data.contentGrid, c = data.clipRect;
+        return new Rectangle(g.x, g.y, c.width * (hScale - 1) + g.width, c.height * (vScale - 1) + g.height);
     }
 
     private inline function get_marginLeft() : Float {
@@ -61,7 +65,7 @@ class RoxNinePatch extends Sprite {
     }
 
     private inline function get_marginRight() : Float {
-        return data.bitmapData.width - data.contentGrid.right;
+        return data.clipRect.width - data.contentGrid.right;
     }
 
     private inline function get_marginTop() : Float {
@@ -69,7 +73,7 @@ class RoxNinePatch extends Sprite {
     }
 
     private inline function get_marginBottom() : Float {
-        return data.bitmapData.height - data.contentGrid.bottom;
+        return data.clipRect.height - data.contentGrid.bottom;
     }
 
 }

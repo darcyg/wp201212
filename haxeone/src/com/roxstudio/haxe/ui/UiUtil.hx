@@ -1,21 +1,21 @@
 package com.roxstudio.haxe.ui;
 
-import com.roxstudio.haxe.ui.RoxNinePatchData;
-import com.roxstudio.haxe.game.ImageUtil;
-import nme.display.DisplayObjectContainer;
-import nme.events.Event;
-import nme.utils.ByteArray;
-import nme.geom.Point;
-import nme.geom.Rectangle;
-import nme.events.MouseEvent;
 import com.roxstudio.haxe.game.GameUtil;
-import nme.display.Sprite;
+import com.roxstudio.haxe.game.ImageUtil;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.display.DisplayObject;
+import nme.display.DisplayObjectContainer;
+import nme.display.GradientType;
+import nme.display.Shape;
+import nme.display.Sprite;
+import nme.geom.Matrix;
+import nme.geom.Point;
+import nme.geom.Rectangle;
 import nme.text.TextField;
 import nme.text.TextFormat;
 import nme.text.TextFormatAlign;
+import nme.utils.ByteArray;
 
 class UiUtil {
 
@@ -41,7 +41,8 @@ class UiUtil {
         return bmp;
     }
 
-    public static inline function rox_textFormat(format: TextFormat, color: Int, size: Float, ?hAlign: Null<Int> = LEFT) : TextFormat {
+    public static inline function textFormat(color: Int, size: Float, ?hAlign: Int = LEFT) : TextFormat {
+        var format = new TextFormat();
 #if android
         format.font = new nme.text.Font("/system/fonts/DroidSansFallback.ttf").fontName;
 #end
@@ -54,15 +55,14 @@ class UiUtil {
     }
 
     private static var textfieldCanvas: BitmapData;
-
-    public static function rox_label(tf: TextField, text: String, format: TextFormat, multiline: Bool, ?width: Null<Float>) : TextField {
-        if (textfieldCanvas == null) {
-            textfieldCanvas = new BitmapData(100, 300);
-        }
+    public static function staticText(text: String, ?color: Int = 0, ?size: Int = 24, ?hAlign: Int = LEFT,
+                                      ?multiline: Bool = false, ?width: Null<Float>) : TextField {
+        if (textfieldCanvas == null) textfieldCanvas = new BitmapData(100, 100);
+        var tf = new TextField();
         var ox = tf.x, oy = tf.y;
         tf.selectable = false;
         tf.mouseEnabled = false;
-        tf.defaultTextFormat = format;
+        tf.defaultTextFormat = textFormat(color, size, hAlign);
         tf.multiline = tf.wordWrap = multiline;
         if (width != null) tf.width = width;
         tf.x = tf.y = 0;
@@ -75,35 +75,55 @@ class UiUtil {
         return tf;
     }
 
-    public static inline function rox_bitmap(bmpPath, ?anchor: Int = TOP_LEFT, ?smooth: Bool = true) : Sprite {
-        var sp = new Sprite();
-        sp.addChild(new Bitmap(ImageUtil.getBitmapData(bmpPath)));
+    public static function bitmap(bmpPath: String, ?anchor: Int = TOP_LEFT, ?smooth: Bool = true) : Sprite {
+        var sp = new Sprite(), bmp: Bitmap;
+        sp.addChild(bmp = new Bitmap(ImageUtil.getBitmapData(bmpPath)));
+        bmp.smoothing = smooth;
         rox_anchor(sp, anchor);
         return sp;
     }
 
-    public static function rox_button(?iconPath: String, ?text: String, ?fontColor: Int = 0, ?fontSize: Float = 24,
-                                      ?textAlign: Int = VCENTER, ?ninePatchPath: String, ?anchor: Int = TOP_LEFT,
-                                      ?listener: Dynamic -> Void) : RoxButton {
+    private static var defaultBg: RoxNinePatchData;
+    public static function buttonBackground() : RoxNinePatch {
+        if (defaultBg == null) {
+            var s = new Shape();
+            var gfx = s.graphics;
+            var mat = new Matrix();
+            mat.createGradientBox(48, 48, GameUtil.PId2, 0, 0);
+            gfx.beginGradientFill(GradientType.LINEAR, [ 0xCCFFFF, 0x33CCFF ], [ 1.0, 1.0 ], [ 0, 255 ], mat);
+            gfx.lineStyle(2, 0x0099CC);
+            gfx.drawRoundRect(1, 1, 46, 46, 16, 16);
+            gfx.endFill();
+            var bmd = new BitmapData(48, 48, true, 0);
+            bmd.draw(s);
+            defaultBg = new RoxNinePatchData(new Rectangle(8, 8, 32, 32), bmd);
+        }
+        return new RoxNinePatch(defaultBg);
+    }
+
+    public static function button(?iconPath: String, ?text: String, ?fontColor: Int = 0, ?fontSize: Float = 24,
+                                  ?textAlign: Int = VCENTER, ?ninePatchPath: String, ?anchor: Int = TOP_LEFT,
+                                  ?listener: Dynamic -> Void) : RoxFlowPane {
         var name = text;
         if (name == null) {
             var i1 = iconPath.lastIndexOf("/"), i2 = iconPath.lastIndexOf(".");
             name = iconPath.substr(i1 + 1, i2 - i1 - 1);
         }
         var bg = ninePatchPath != null ? new RoxNinePatch(ImageUtil.getNinePatchData(ninePatchPath)) : null;
-        var icon = iconPath != null ? rox_smooth(new Bitmap(ImageUtil.getBitmapData(iconPath))) : null;
-        var tf = text != null ? rox_label(new TextField(), text, rox_textFormat(new TextFormat(), fontColor, fontSize), false) : null;
+        var children: Array<DisplayObject> = [];
+        if (iconPath != null) children.push(rox_smooth(new Bitmap(ImageUtil.getBitmapData(iconPath))));
+        if (text != null) children.push(staticText(text, fontColor, fontSize, false));
 
-        var sp = new RoxButton(null, null, anchor, icon, tf, bg, textAlign, listener);
+        var sp = new RoxFlowPane(null, null, anchor, children, bg, textAlign, listener);
         sp.name = name;
         return sp;
     }
 
-    public static inline function rox_buttonWidth(sp: Sprite) : Float {
+    public static inline function rox_pixelWidth(sp: Sprite) : Float { // TODO: need more elegant method
         return cast(sp.getChildAt(0), Bitmap).bitmapData.width;
     }
 
-    public static inline function rox_buttonHeight(sp: Sprite) : Float {
+    public static inline function rox_pixelHeight(sp: Sprite) : Float {
         return cast(sp.getChildAt(0), Bitmap).bitmapData.height;
     }
 
@@ -113,7 +133,7 @@ class UiUtil {
         return dp;
     }
 
-    public static inline function rox_anchor(sp: Sprite, anchor: Int) : Sprite {
+    public static function rox_anchor(sp: Sprite, anchor: Int) : Sprite {
         var w = sp.width / sp.scaleX, h = sp.height / sp.scaleY;
         var xoff = (anchor & 0x0F) == RIGHT ? -w : (anchor & 0x0F) == HCENTER ? -w / 2 : 0;
         var yoff = (anchor & 0xF0) == BOTTOM ? -h : (anchor & 0xF0) == VCENTER ? -h / 2 : 0;
@@ -160,11 +180,11 @@ class UiUtil {
         }
     }
 
-    public static inline function rox_rangeValue<T: Float>(v: T, min: T, max: T) : T {
+    public static inline function rangeValue<T: Float>(v: T, min: T, max: T) : T {
         return v < min ? min : v > max ? max : v;
     }
 
-    public static inline function rox_byteArray(?length: Null<Int>) : ByteArray {
+    public static inline function byteArray(?length: Null<Int>) : ByteArray {
 #if flash
         var bb = new ByteArray();
         if (length != null) bb.length = length;

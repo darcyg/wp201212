@@ -1,7 +1,7 @@
 package com.weiplus.client;
 
 import com.roxstudio.haxe.ui.UiUtil;
-import com.roxstudio.haxe.ui.RoxButton;
+import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.game.ImageUtil;
 import com.roxstudio.haxe.game.ImageUtil;
 import com.roxstudio.haxe.ui.RoxScreen;
@@ -34,7 +34,7 @@ class BaseScreen extends RoxScreen {
         designWidth = DESIGN_WIDTH;
         d2rScale = screenWidth / designWidth;
         designHeight = screenHeight / d2rScale;
-        titleBar = UiUtil.rox_bitmap("res/bg_main_top.png");
+        titleBar = UiUtil.bitmap("res/bg_main_top.png");
         titleBtnOffsetL = BTN_SPACING;
         titleBtnOffsetR = titleBar.width - BTN_SPACING;
         if (title != null) {
@@ -50,7 +50,7 @@ class BaseScreen extends RoxScreen {
         addChild(titleBar);
     }
 
-    public inline function addTitleButton(btn: RoxButton, align: Int) {
+    public inline function addTitleButton(btn: RoxFlowPane, align: Int) {
         if (align == UiUtil.RIGHT) {
             btn.anchor = UiUtil.RIGHT | UiUtil.VCENTER;
             titleBar.addChild(btn.rox_move(titleBtnOffsetR, TOP_HEIGHT / 2));

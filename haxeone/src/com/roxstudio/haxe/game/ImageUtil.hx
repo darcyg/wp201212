@@ -1,5 +1,7 @@
 package com.roxstudio.haxe.game;
 
+import com.roxstudio.haxe.ui.RoxBitmapLoader;
+import nme.net.URLLoader;
 import com.roxstudio.haxe.ui.RoxNinePatchData;
 import com.roxstudio.haxe.ui.RoxNinePatch;
 import com.roxstudio.haxe.game.GameUtil;
@@ -71,6 +73,16 @@ class ImageUtil {
             }
         }
         return bmd;
+    }
+
+    public static function getBitmapLoader(url: String) : RoxBitmapLoader {
+        var ldr: RoxBitmapLoader = cast(map.get(url));
+        if (ldr == null) {
+            ldr = new RoxBitmapLoader(url);
+            map.set(url, ldr);
+            groups.get(currentGroup).push(url);
+        }
+        return ldr;
     }
 
     public static function getNinePatchData(path: String) : RoxNinePatchData {

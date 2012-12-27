@@ -1,5 +1,7 @@
 package com.weiplus.client;
 
+import com.roxstudio.haxe.ui.RoxFlowPane;
+import com.roxstudio.haxe.ui.RoxAsyncBitmap;
 import neash.geom.Rectangle;
 import com.roxstudio.haxe.game.GameUtil;
 import com.roxstudio.haxe.game.ImageUtil;
@@ -19,7 +21,7 @@ class Postit extends Sprite {
     private static inline var MARGIN_RATIO = 1 / 40;
     private static inline var MIN_SPACING = 2;
     private static inline var SPACING_RATIO = 1 / 40;
-    private static inline var AVATAR_RATIO = 50 / 450; // 50x50 in 480x800 screen
+    private static inline var AVATAR_RATIO = 60 / 450; // 50x50 in 480x800 screen
 
     private static inline var TITLE_TEXT_RATIO = 4 / 30;
     private static inline var TEXT_RATIO = 1 / 10; // 32 -> 240
@@ -28,14 +30,15 @@ class Postit extends Sprite {
     private static inline var MAX_TEXT_SIZE = 18;
     private static inline var MIN_TEXT_SIZE = 12;
 
-    private var image: Sprite;
-    private var imageLabel: TextField;
-    private var infoLabel: TextField; // numRetweets, numComments, numLikes etc.
+    private var image: RoxAsyncBitmap;
+    private var playButton: RoxFlowPane;
+    private var imageLabel: RoxFlowPane;
 
-    private var userAvatar: Sprite;
+    private var userAvatar: RoxFlowPane;
     private var userLabel: TextField;
     private var dateLabel: TextField;
     private var textLabel: TextField;
+    private var infoLabel: TextField; // numRetweets, numComments, numLikes etc.
 
     public var status: Status;
 
@@ -81,7 +84,7 @@ class Postit extends Sprite {
         var titletextsize = inWidth * TITLE_TEXT_RATIO;
         titletextsize = titletextsize > MAX_TITLE_TEXT_SIZE ? MAX_TITLE_TEXT_SIZE :
                         titletextsize < MIN_TITLE_TEXT_SIZE ? MIN_TITLE_TEXT_SIZE : titletextsize;
-        var format = new TextFormat().rox_textFormat(0, titletextsize, 2); // center
+        var format = new TextFormat().textFormat(0, titletextsize, 2); // center
         imageLabel.rox_label(status.appData.label, format, false, contentw).rox_move(margin, yoffset);
         yoffset += imageLabel.height + spacing;
 
@@ -95,19 +98,19 @@ class Postit extends Sprite {
         var textsize = inWidth * TEXT_RATIO;
         textsize = textsize > MAX_TEXT_SIZE ? MAX_TEXT_SIZE :
                 textsize < MIN_TEXT_SIZE ? MIN_TEXT_SIZE : textsize;
-        format = new TextFormat().rox_textFormat(0x222222, textsize); // left (default)
-        userLabel.rox_label(status.user.name, format, false);
+        format = new TextFormat().textFormat(0x222222, textsize); // left (default)
+        userLabel.staticText(status.user.name, format, false);
         userLabel.rox_move(margin + avatarw + spacing, yoffset + (avatarw - userLabel.height) / 2);
-        format = new TextFormat().rox_textFormat(0x222222, textsize);
-        dateLabel.rox_label("1分钟前", format, false);
+        format = new TextFormat().textFormat(0x222222, textsize);
+        dateLabel.staticText("1分钟前", format, false);
         dateLabel.rox_move(inWidth - margin - dateLabel.width, yoffset + (avatarw - dateLabel.height) / 2);
         yoffset += avatarw + spacing / 2;
 
         var avatarSplitOffset = yoffset;
         yoffset += spacing / 2 + 2;
 
-        format = new TextFormat().rox_textFormat(0x111111, textsize);
-        textLabel.rox_label(status.text, format, true, contentw);
+        format = new TextFormat().textFormat(0x111111, textsize);
+        textLabel.staticText(status.text, format, true, contentw);
         textLabel.rox_move(margin, yoffset);
         var h = yoffset + textLabel.height + margin;
 

@@ -10,18 +10,26 @@ class RoxNinePatchData {
     public var ninePatchGrid(default, null): Rectangle;
     public var contentGrid(default, null): Rectangle;
     public var bitmapData(default, null): BitmapData;
+    public var clipRect(default, null): Rectangle;
     public var uvs(default, null): Vector<Float>;
     public var ids(default, null): Vector<Int>;
 
-    public function new(bitmapData: BitmapData, ninePatchGrid: Rectangle, ?contentGrid: Rectangle) {
-        this.bitmapData = bitmapData;
+    public function new(ninePatchGrid: Rectangle, ?contentGrid: Rectangle, ?bitmapData: BitmapData, ?clipRect: Rectangle) {
         var g = this.ninePatchGrid = ninePatchGrid;
         this.contentGrid = contentGrid == null ? ninePatchGrid : contentGrid;
+        this.bitmapData = bitmapData;
+        var c = clipRect;
+        if (c == null) {
+            c = new Rectangle(0, 0, bitmapData != null ? bitmapData.width : 2 * g.x + g.width,
+            bitmapData != null ? bitmapData.height : 2 * g.y + g.height);
+        }
+        this.clipRect = c;
+        if (bitmapData == null) return;
+        var w = bitmapData.width, h = bitmapData.height;
         uvs = new Vector<Float>();
         ids = new Vector<Int>();
-        var w = bitmapData.width, h = bitmapData.height;
-        var hval = [ 0.0, g.x / w, (g.x + g.width) / w, 1.0 ];
-        var vval = [ 0.0, g.y / h, (g.y + g.height) / h, 1.0 ];
+        var hval = [ c.x / w, (c.x + g.x) / w, (c.x + g.right) / w, c.right / w ];
+        var vval = [ c.y / h, (c.y + g.y) / h, (c.y + g.bottom) / h, c.bottom / h ];
         for (i in 0...4) {
             for (j in 0...4) {
                 uvs.push(hval[j]);
@@ -75,8 +83,8 @@ class RoxNinePatchData {
         if (y2 < y1) { y1 = 0; y2 = h - 1; }
         if (b2 < b1) { b1 = 0; b2 = w - 1; }
         if (r2 < r1) { r1 = 0; r2 = h - 1; }
-        var newBmd = new BitmapData(w, h, true, 0);
-        newBmd.copyPixels(bmd, new Rectangle(1, 1, w, h), new Point(0, 0));
-        return new RoxNinePatchData(newBmd, new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1), new Rectangle(b1, r1, b2 - b1 + 1, r2 - r1 + 1));
+        return new RoxNinePatchData(new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1),
+                new Rectangle(b1, r1, b2 - b1 + 1, r2 - r1 + 1), bmd,
+                new Rectangle(1, 1, w, h));
     }
 }

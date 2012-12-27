@@ -53,7 +53,7 @@ class Tile extends Sprite {
         mask.draw(shape, new Matrix(scale, 0, 0, scale, 0, 0));
         var mbuf = mask.getPixels(new Rectangle(0, 0, sl, sl));
         var bbuf = bmd.getPixels(new Rectangle(0, 0, sl, sl));
-        var obuf = UiUtil.rox_byteArray(mbuf.length);
+        var obuf = UiUtil.byteArray(mbuf.length);
         //mbuf.position = bbuf.position = 0;
         //trace(">>>>>mb=" + mbuf.bytesAvailable + ",len=" + mbuf.length + ",bb=" + bbuf.bytesAvailable + ",len=" + bbuf.length + ",pos=" + mbuf.position);
         for (i in 0...mbuf.length) {

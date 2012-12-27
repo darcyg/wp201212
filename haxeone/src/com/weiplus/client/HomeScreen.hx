@@ -1,6 +1,6 @@
 package com.weiplus.client;
 
-import com.roxstudio.haxe.ui.RoxButton;
+import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.events.RoxGestureEvent;
 import com.roxstudio.haxe.game.GameUtil;
@@ -22,8 +22,8 @@ using com.roxstudio.haxe.ui.UiUtil;
 
 class HomeScreen extends BaseScreen {
 
-    var btnSingleCol: RoxButton;
-    var btnDoubleCol: RoxButton;
+    var btnSingleCol: RoxFlowPane;
+    var btnDoubleCol: RoxFlowPane;
     var main: Sprite;
     var mainh: Float;
     var viewh: Float;
@@ -32,7 +32,7 @@ class HomeScreen extends BaseScreen {
 
     override public function onCreate() {
         super.onCreate();
-        btnSingleCol = new RoxButton("res/btnSingleCol.png", UiUtil.TOP | UiUtil.RIGHT, onButton);
+        btnSingleCol = new RoxFlowPane("res/btnSingleCol.png", UiUtil.TOP | UiUtil.RIGHT, onButton);
         addTitleButton(btnSingleCol, designWidth - 11, 11);
         btnDoubleCol = new Sprite().rox_button("res/btnDoubleCol.png", UiUtil.TOP | UiUtil.RIGHT, onButton);
         addTitleButton(btnDoubleCol, designWidth - 11, 11);
@@ -62,7 +62,7 @@ class HomeScreen extends BaseScreen {
         }
         sp.addChild(btnpanel.rox_scale(d2rScale));
 
-        viewh = height - (cast(btnpanel.getChildByName("btnWrite"), Sprite).rox_buttonHeight()) * d2rScale;
+        viewh = height - (cast(btnpanel.getChildByName("btnWrite"), Sprite).rox_pixelHeight()) * d2rScale;
         return sp;
     }
 
@@ -127,9 +127,9 @@ class HomeScreen extends BaseScreen {
                     }
                 }
             case RoxGestureEvent.GESTURE_PAN:
-                main.y = UiUtil.rox_rangeValue(main.y + e.extra.y, UiUtil.rox_rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
+                main.y = UiUtil.rangeValue(main.y + e.extra.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
             case RoxGestureEvent.GESTURE_SWIPE:
-                var desty = UiUtil.rox_rangeValue(main.y + e.extra.y * 2.0, UiUtil.rox_rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
+                var desty = UiUtil.rangeValue(main.y + e.extra.y * 2.0, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
                 agent.swipeScroll(2.0, { y: desty });
             case RoxGestureEvent.GESTURE_PINCH:
                 if (numCol > 1 && e.extra < 1) {

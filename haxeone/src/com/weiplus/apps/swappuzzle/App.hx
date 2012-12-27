@@ -100,8 +100,8 @@ class App extends BaseScreen {
         if (e.type == RoxGestureEvent.GESTURE_PAN) {
             //trace(">>released<<=" + tile);
             board.swapChildren(tile, board.getChildAt(board.numChildren - 1));
-            var nx = UiUtil.rox_rangeValue(e.extra.x + tile.x, sideLen / 2, boardw - sideLen / 2);
-            var ny = UiUtil.rox_rangeValue(e.extra.y + tile.y, sideLen / 2, boardh - sideLen / 2);
+            var nx = UiUtil.rangeValue(e.extra.x + tile.x, sideLen / 2, boardw - sideLen / 2);
+            var ny = UiUtil.rangeValue(e.extra.y + tile.y, sideLen / 2, boardh - sideLen / 2);
             tile.rox_move(nx, ny);
         } else if (e.type == RoxGestureEvent.GESTURE_SWIPE) {
             var ncol = Std.int(tile.x / sideLen), nrow = Std.int(tile.y / sideLen);

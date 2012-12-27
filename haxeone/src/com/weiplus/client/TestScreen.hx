@@ -1,5 +1,7 @@
 package com.weiplus.client;
 
+import com.roxstudio.haxe.ui.UiUtil;
+import com.roxstudio.haxe.ui.UiUtil;
 import nme.display.Shape;
 import com.roxstudio.haxe.ui.RoxNinePatch;
 import com.roxstudio.haxe.ui.RoxAsyncBitmap;
@@ -11,7 +13,7 @@ import com.eclecticdesignstudio.spritesheet.Spritesheet;
 import com.roxstudio.haxe.ui.UiUtil;
 import nme.text.TextField;
 import nme.text.TextFormat;
-import com.roxstudio.haxe.ui.RoxButton;
+import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.game.ImageUtil;
 import nme.display.BitmapData;
 import nme.display.Bitmap;
@@ -34,13 +36,12 @@ class TestScreen extends BaseScreen {
         super();
         title = new Sprite();
 //        title.addChild(new Bitmap(ImageUtil.getBitmapData("res/icon_logo.png")).rox_smooth());
-        title.addChild(new TextField().rox_label("测试标题", new TextFormat().rox_textFormat(0xFF0000, 36), false));
+        title.addChild(new TextField().staticText("测试标题", new TextFormat().textFormat(0xFF0000, 36), false));
     }
 
     override public function onCreate() {
         super.onCreate();
-        var bg = new RoxNinePatch(ImageUtil.getNinePatchData("res/btn_common.9.png"));
-        addTitleButton(new RoxButton(new Bitmap(ImageUtil.getBitmapData("res/icon_single_column.png")), bg), UiUtil.RIGHT);
+        addTitleButton(UiUtil.button("res/icon_single_column.png", null, "res/btn_common.9.png"), UiUtil.RIGHT);
     }
 
     override public function createContent(height: Float) : Sprite {
@@ -69,19 +70,19 @@ class TestScreen extends BaseScreen {
 //        sp.rox_move(screenWidth / 2, height / 2);
 //        content.addChild(sp);
 
-        content.addChild(UiUtil.rox_button("res/icon_message.png", function(e) {trace(e.target.name + " clicked");}).rox_move(100, 100));
-        content.addChild(UiUtil.rox_button("res/clock.png", "CLOCK", 0xFFFFFF, 32, UiUtil.HCENTER, function(e) {trace(e.target.name + " clicked");}).rox_move(100, 200));
-        content.addChild(UiUtil.rox_button("res/icon_time.png", "三分钟之前", 0, 20, function(e) {trace(e.target.name + " clicked");}).rox_move(100, 480));
+        content.addChild(UiUtil.button("res/icon_message.png", function(e) {trace(e.target.name + " clicked");}).rox_move(100, 100));
+        content.addChild(UiUtil.button("res/clock.png", "CLOCK", 0xFFFFFF, 32, UiUtil.HCENTER, function(e) {trace(e.target.name + " clicked");}).rox_move(100, 200));
+        content.addChild(UiUtil.button("res/icon_time.png", "三分钟之前", 0, 20, function(e) {trace(e.target.name + " clicked");}).rox_move(100, 480));
 
-        var tf = new TextField().rox_label("测试阴影", new TextFormat().rox_textFormat(0xFF0000, 50), false);
+        var tf = new TextField().staticText("测试阴影", new TextFormat().textFormat(0xFF0000, 50), false);
 //        tf.filters = [ new DropShadowFilter(4.0, 45.0, 0, 0.3) ];
-        content.addChild(tf);//.rox_move(100, 600));
+        content.addChild(tf.rox_move(100, 600));
         var shape = new Shape();
         shape.graphics.beginFill(0xFF0000);
         shape.graphics.drawRect(0, 0, 60, 40);
         shape.graphics.endFill();
         tf.mask = shape;
-        content.addChild(shape);
+        content.addChild(shape.rox_move(100, 600));
 //        var sheet = new Spritesheet(ImageUtil.getBitmapData("res/progress.png"));
 //        var frames: Array<Int> = [];
 //        for (i in 0...12) {
@@ -109,8 +110,9 @@ class TestScreen extends BaseScreen {
 
 //        this.filters = [ new DropShadowFilter(4.0, 45.0, 0, 0.3) ];
 
-//        var remote = new RoxAsyncBitmap("http://img.my.csdn.net/uploads/201212/19/1355883342_4474.png");
-//        content.addChild(remote.rox_move(100, 300));
+//        var remote = new RoxAsyncBitmap("http://img.my.csdn.net/uploads/201212/19/1355883342_4474.png", 500, 500,
+//                UiUtil.rox_bitmap("res/clock.png"), UiUtil.rox_bitmap("res/bg_play_tip.png"));
+//        content.addChild(remote.rox_move(20, 200));
         return content;
     }
 
