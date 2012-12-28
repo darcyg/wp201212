@@ -1,4 +1,4 @@
 wp201212
 ========
 
-first repo for test purpose
+基于haXe+NME的内部项目，开发中。
