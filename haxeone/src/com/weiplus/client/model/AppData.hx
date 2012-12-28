@@ -2,8 +2,10 @@ package com.weiplus.client.model;
 
 class AppData {
 
+    public static inline var IMAGE = "image";
+
     public var id: String;
-    public var type: String; // image/game_id
+    public var type: String; // image/app_id
     public var label: String;
     public var url: String;
     public var image: String; // url

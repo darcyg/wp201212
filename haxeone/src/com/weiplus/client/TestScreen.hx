@@ -1,5 +1,10 @@
 package com.weiplus.client;
 
+import nme.geom.Point;
+import com.roxstudio.haxe.events.RoxGestureEvent;
+import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.ui.UiUtil;
+import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.ui.UiUtil;
 import nme.display.Shape;
@@ -36,7 +41,7 @@ class TestScreen extends BaseScreen {
         super();
         title = new Sprite();
 //        title.addChild(new Bitmap(ImageUtil.getBitmapData("res/icon_logo.png")).rox_smooth());
-        title.addChild(new TextField().staticText("测试标题", new TextFormat().textFormat(0xFF0000, 36), false));
+        title.addChild(UiUtil.staticText("测试标题", 0xFF0000, 36));
     }
 
     override public function onCreate() {
@@ -74,7 +79,7 @@ class TestScreen extends BaseScreen {
         content.addChild(UiUtil.button("res/clock.png", "CLOCK", 0xFFFFFF, 32, UiUtil.HCENTER, function(e) {trace(e.target.name + " clicked");}).rox_move(100, 200));
         content.addChild(UiUtil.button("res/icon_time.png", "三分钟之前", 0, 20, function(e) {trace(e.target.name + " clicked");}).rox_move(100, 480));
 
-        var tf = new TextField().staticText("测试阴影", new TextFormat().textFormat(0xFF0000, 50), false);
+        var tf = UiUtil.staticText("测试阴影", 0xFF0000, 50, false);
 //        tf.filters = [ new DropShadowFilter(4.0, 45.0, 0, 0.3) ];
         content.addChild(tf.rox_move(100, 600));
         var shape = new Shape();
@@ -113,6 +118,16 @@ class TestScreen extends BaseScreen {
 //        var remote = new RoxAsyncBitmap("http://img.my.csdn.net/uploads/201212/19/1355883342_4474.png", 500, 500,
 //                UiUtil.rox_bitmap("res/clock.png"), UiUtil.rox_bitmap("res/bg_play_tip.png"));
 //        content.addChild(remote.rox_move(20, 200));
+        var icon = UiUtil.bitmap("res/icon_bubble.png");
+        var text = UiUtil.staticText("我这里就是要测试一下文字是否能够平滑的放缩abc123ABC!", 0xFF0000, 36, true, 250);
+        var textscale = new RoxFlowPane([ icon, text ], UiUtil.buttonBackground(), UiUtil.TOP);
+        var ag = new RoxGestureAgent(textscale);
+        textscale.addEventListener(RoxGestureEvent.GESTURE_PINCH, ag.getHandler());
+        textscale.addEventListener(RoxGestureEvent.GESTURE_PAN, function(e) {
+            textscale.rox_scale(textscale.scaleX + (e.extra.x > 0 ? 0.1 : -0.1));
+
+        });
+        content.addChild(textscale.rox_move(50, 200));
         return content;
     }
 

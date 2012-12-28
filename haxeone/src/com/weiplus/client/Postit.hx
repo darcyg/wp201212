@@ -1,5 +1,8 @@
 package com.weiplus.client;
 
+import com.roxstudio.haxe.ui.UiUtil;
+import com.weiplus.client.model.AppData;
+import com.roxstudio.haxe.ui.RoxBitmapLoader;
 import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.ui.RoxAsyncBitmap;
 import neash.geom.Rectangle;
@@ -30,34 +33,40 @@ class Postit extends Sprite {
     private static inline var MAX_TEXT_SIZE = 18;
     private static inline var MIN_TEXT_SIZE = 12;
 
-    private var image: RoxAsyncBitmap;
+    private var image: RoxBitmapLoader;
     private var playButton: RoxFlowPane;
     private var imageLabel: RoxFlowPane;
 
     private var userAvatar: RoxFlowPane;
     private var userLabel: TextField;
-    private var dateLabel: TextField;
+    private var dateLabel: RoxFlowPane;
     private var textLabel: TextField;
-    private var infoLabel: TextField; // numRetweets, numComments, numLikes etc.
+    private var infoLabel: RoxFlowPane; // numRetweets, numComments, numLikes etc.
 
     public var status: Status;
 
-    public function new(inStatus: Status) {
+    public function new(inStatus: Status, width: Float) {
         super();
         status = inStatus;
+        image = ImageUtil.getBitmapLoader(status.appData.image, imageOk);
+        if (status.appData.type != AppData.IMAGE) addChild(playButton = UiUtil.button("res/btn_play.png"));
+//            addChild(infoLabel = new TextField());
+        addChild(imageLabel = new RoxFlowPane());
+        addChild(userAvatar = new RoxFlowPane());
+        addChild(userLabel = new TextField());
+        addChild(dateLabel = new TextField());
+        addChild(textLabel = new TextField());
+        image.addChild(new Bitmap(ImageUtil.getBitmapData(status.appData.image)).rox_smooth());
+        userAvatar.addChild(new Bitmap(ImageUtil.getBitmapData(status.user.profileImage)).rox_smooth());
+        update(width);
     }
 
-    public function update(inWidth: Float, statusChanged: Bool) {
+    private function imageOk() {
+
+    }
+
+    public function update(inWidth: Float) {
         if (image == null) {
-            addChild(image = new Sprite());
-            addChild(imageLabel = new TextField());
-//            addChild(infoLabel = new TextField());
-            addChild(userAvatar = new Sprite());
-            addChild(userLabel = new TextField());
-            addChild(dateLabel = new TextField());
-            addChild(textLabel = new TextField());
-            image.addChild(new Bitmap(ImageUtil.getBitmapData(status.appData.image)).rox_smooth());
-            userAvatar.addChild(new Bitmap(ImageUtil.getBitmapData(status.user.profileImage)).rox_smooth());
         }
         trace("img="+image.width+","+image.height+",userAvatar="+userAvatar.width+","+userAvatar.height);
         if (width == inWidth && !statusChanged) return;

@@ -55,7 +55,7 @@ class UiUtil {
     }
 
     private static var textfieldCanvas: BitmapData;
-    public static function staticText(text: String, ?color: Int = 0, ?size: Int = 24, ?hAlign: Int = LEFT,
+    public static function staticText(text: String, ?color: Int = 0, ?size: Float = 24, ?hAlign: Int = LEFT,
                                       ?multiline: Bool = false, ?width: Null<Float>) : TextField {
         if (textfieldCanvas == null) textfieldCanvas = new BitmapData(100, 100);
         var tf = new TextField();
@@ -101,8 +101,11 @@ class UiUtil {
         return new RoxNinePatch(defaultBg);
     }
 
-    public static function button(?iconPath: String, ?text: String, ?fontColor: Int = 0, ?fontSize: Float = 24,
-                                  ?textAlign: Int = VCENTER, ?ninePatchPath: String, ?anchor: Int = TOP_LEFT,
+    public static function button(?anchor: Int = TOP_LEFT, // anchor point relative to register point
+                                  ?iconPath: String,
+                                  ?text: String, ?fontColor: Int = 0, ?fontSize: Float = 24,
+                                  ?childrenAlign: Int = VCENTER, // alignment of children
+                                  ?ninePatchPath: String,
                                   ?listener: Dynamic -> Void) : RoxFlowPane {
         var name = text;
         if (name == null) {
@@ -112,9 +115,9 @@ class UiUtil {
         var bg = ninePatchPath != null ? new RoxNinePatch(ImageUtil.getNinePatchData(ninePatchPath)) : null;
         var children: Array<DisplayObject> = [];
         if (iconPath != null) children.push(rox_smooth(new Bitmap(ImageUtil.getBitmapData(iconPath))));
-        if (text != null) children.push(staticText(text, fontColor, fontSize, false));
+        if (text != null) children.push(staticText(text, fontColor, fontSize));
 
-        var sp = new RoxFlowPane(null, null, anchor, children, bg, textAlign, listener);
+        var sp = new RoxFlowPane(null, null, anchor, children, bg, childrenAlign, listener);
         sp.name = name;
         return sp;
     }

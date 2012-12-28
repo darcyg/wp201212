@@ -50,7 +50,7 @@ class RoxNinePatchData {
     }
 
     public function dispose() {
-        this.bitmapData.dispose();
+        if (bitmapData != null) bitmapData.dispose();
         ninePatchGrid = null;
         contentGrid = null;
         uvs = null;

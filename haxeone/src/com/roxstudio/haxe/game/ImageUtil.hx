@@ -50,6 +50,8 @@ class ImageUtil {
                 cast(obj, BitmapData).dispose();
             } else if (Std.is(obj, RoxNinePatchData)) {
                 cast(obj, RoxNinePatchData).dispose();
+            } else if (Std.is(obj, RoxBitmapLoader)) {
+                cast(obj, RoxBitmapLoader).dispose();
             }
         }
     }

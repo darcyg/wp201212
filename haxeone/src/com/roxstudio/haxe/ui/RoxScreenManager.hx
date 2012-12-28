@@ -54,7 +54,7 @@ class RoxScreenManager extends Sprite {
         ImageUtil.currentGroup = screenClassName;
         dest.onNewRequest(requestData);
         if (source != null) {
-            startAnimate(source, dest, animate);
+            startAnimate(source, dest, animate, false);
         } else {
             dest.x = dest.y = 0;
             dest.alpha = dest.scaleX = dest.scaleY = 1;
@@ -69,11 +69,11 @@ class RoxScreenManager extends Sprite {
         animate = animate != null ? animate : item.animate.getReverse();
         var item = stack[stack.length - 1];
         var dest = screens.get(item.className);
-        startAnimate(screen, dest, animate);
+        startAnimate(screen, dest, animate, true);
         dest.onScreenResult(item.requestCode, resultCode, resultData);
     }
 
-    private function startAnimate(src: RoxScreen, dest: RoxScreen, anim: RoxAnimate) {
+    private function startAnimate(src: RoxScreen, dest: RoxScreen, anim: RoxAnimate, finish: Bool) {
         addChild(dest);
         var srcsp = new Sprite(), destsp = new Sprite();
         var srcbmd = new BitmapData(Std.int(src.screenWidth), Std.int(src.screenHeight));
@@ -99,7 +99,7 @@ class RoxScreenManager extends Sprite {
                 }
 //                trace("dest:" + Type.getClassName(Type.getClass(dest))+",xy=" + dest.x +","+ dest.y+",sc="+dest.scaleX+",alpha="+dest.alpha);
                 Actuate.tween(srcsp, anim.interval, { x: -destsp.x, y: -destsp.y });
-                Actuate.tween(destsp, anim.interval, { x: 0, y: 0 }).onComplete(animDone, [ src, dest, srcsp, destsp ]);
+                Actuate.tween(destsp, anim.interval, { x: 0, y: 0 }).onComplete(animDone, [ src, dest, srcsp, destsp, finish ]);
             case RoxAnimate.ZOOM_IN: // popup
                 var r: Rectangle = cast(anim.arg);
                 destsp.scaleX = destsp.scaleY = r.width / dest.screenWidth;
@@ -109,23 +109,23 @@ class RoxScreenManager extends Sprite {
                 destsp.alpha = 0;
 //                src.visible = false;
                 Actuate.tween(destsp, anim.interval, { x: 0, y: 0, scaleX: 1, scaleY: 1, alpha: 1 })
-                        .onComplete(animDone, [ src, dest, srcsp, destsp ]);
+                        .onComplete(animDone, [ src, dest, srcsp, destsp, finish ]);
             case RoxAnimate.ZOOM_OUT: // shrink
                 this.swapChildrenAt(0, 1); // make sure srcsp is on top
                 var r: Rectangle = cast(anim.arg);
                 var scale = r.width / dest.screenWidth;
                 Actuate.tween(srcsp, anim.interval, { x: r.x, y: r.y, scaleX: scale, scaleY: scale, alpha: 0.01 })
-                        .onComplete(animDone, [ src, dest, srcsp, destsp ]);
+                        .onComplete(animDone, [ src, dest, srcsp, destsp, finish ]);
 
         }
     }
 
-    private inline function animDone(src: Dynamic, dest: Dynamic, srcsp: Dynamic, destsp: Dynamic) {
+    private inline function animDone(src: RoxScreen, dest: RoxScreen, srcsp: Sprite, destsp: Sprite, finish: Bool) {
         cast(dest, RoxScreen).onFullyShown();
         var srcScreen = cast(src, RoxScreen);
         removeChild(srcScreen);
         srcScreen.onHidden();
-        if (srcScreen.disposeAtFinish) {
+        if (finish && srcScreen.disposeAtFinish) {
             var classname = Type.getClassName(Type.getClass(srcScreen));
             screens.remove(classname);
             ImageUtil.disposeGroup(classname);
