@@ -11,8 +11,12 @@ class RoxNinePatchData {
     public var contentGrid(default, null): Rectangle;
     public var bitmapData(default, null): BitmapData;
     public var clipRect(default, null): Rectangle;
+#if !html5
     public var uvs(default, null): Vector<Float>;
     public var ids(default, null): Vector<Int>;
+#else
+    public var gridBmds: Array<BitmapData>;
+#end
 
     public function new(ninePatchGrid: Rectangle, ?contentGrid: Rectangle, ?bitmapData: BitmapData, ?clipRect: Rectangle) {
         var g = this.ninePatchGrid = ninePatchGrid;
@@ -26,6 +30,7 @@ class RoxNinePatchData {
         this.clipRect = c;
         if (bitmapData == null) return;
         var w = bitmapData.width, h = bitmapData.height;
+#if !html5
         uvs = new Vector<Float>();
         ids = new Vector<Int>();
         var hval = [ c.x / w, (c.x + g.x) / w, (c.x + g.right) / w, c.right / w ];
@@ -47,14 +52,38 @@ class RoxNinePatchData {
             ids.push(i + 4);
             i++;
         }
+#else
+        gridBmds = [];
+        var hval = [ c.x, g.x, c.x + g.x, g.width, c.x + g.right, c.width ];
+        var vval = [ c.y, g.y, c.y + g.y, g.height, c.y + g.bottom, c.height ];
+        for (i in 0...3) {
+            var yy = vval[i << 1], hh = vval[(i << 1) + 1];
+            for (j in 0...3) {
+                var xx = hval[j << 1], ww = hval[(i << 1) + 1];
+                if (ww == 0 || hh == 0) {
+                    gridBmds.push(null);
+                } else {
+                    var bbmd = new BitmapData(Std.int(ww), Std.int(hh), true, 0);
+                    bbmd.copyPixels(bitmapData, new Rectangle(xx, yy, ww, hh), new Point(0, 0));
+                    gridBmds.push(bbmd);
+                }
+            }
+        }
+#end
     }
 
     public function dispose() {
         if (bitmapData != null) bitmapData.dispose();
         ninePatchGrid = null;
         contentGrid = null;
+#if !html5
         uvs = null;
         ids = null;
+#else
+        if (gridBmds != null)
+            for (b in gridBmds) { if (b != null) b.dispose(); }
+        gridBmds = null;
+#end
     }
 
     /**

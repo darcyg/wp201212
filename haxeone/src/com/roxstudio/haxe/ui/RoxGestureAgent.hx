@@ -53,7 +53,7 @@ class RoxGestureAgent {
     private var touchList: List<TouchPoint>;
     private var isTouch: Bool;
     private var longPressTimer: GenericActuator;
-    private var scrollTimer: GenericActuator;
+    private var tweener: GenericActuator;
     /**
      * READY -> begin:BEGIN -> end:tap
      * READY -> begin:BEGIN -> move:MOVE [-> MOVE]: pan
@@ -85,12 +85,12 @@ class RoxGestureAgent {
         return callback(handleEvent, flags);
     }
 
-    public inline function swipeScroll(target: Dynamic, interval: Float, properties: Dynamic) {
-        scrollTimer = cast(Actuate.tween(target, interval, properties, false));
+    public inline function startTween(target: Dynamic, interval: Float, properties: Dynamic) {
+        tweener = cast(Actuate.tween(target, interval, properties, false));
     }
 
-    public inline function stopScroll() {
-        if (scrollTimer != null) scrollTimer.stop(null, false, false);
+    public inline function stopTween() {
+        if (tweener != null) tweener.stop(null, false, false);
     }
 
     private function handleEvent(flags: Int, e: RoxGestureEvent) {
@@ -103,7 +103,7 @@ class RoxGestureAgent {
             case RoxGestureEvent.GESTURE_SWIPE:
                 var dx = flags & PAN_X != 0 ? e.extra.x * SWIPE_SCROLL_TIME : 0;
                 var dy = flags & PAN_Y != 0 ? e.extra.y * SWIPE_SCROLL_TIME : 0;
-                swipeScroll(owner, SWIPE_SCROLL_TIME, { x: sp.x + dx, y: sp.y + dy });
+                startTween(owner, SWIPE_SCROLL_TIME, { x: sp.x + dx, y: sp.y + dy });
             case RoxGestureEvent.GESTURE_PINCH:
                 var scale: Float = e.extra;
                 var spt = sp.parent.localToGlobal(new Point(sp.x, sp.y));
@@ -177,7 +177,7 @@ class RoxGestureAgent {
                 state = BEGIN;
                 touch0 = pt;
                 longPressTimer = cast(Actuate.timer(longPressDelay).onComplete(sendLongPress, [ pt ]));
-                stopScroll();
+                stopTween();
             } else {
                 handled = false;
             }
@@ -201,7 +201,7 @@ class RoxGestureAgent {
                 var pan = new Point(plpt1.x - plpt2.x, plpt1.y - plpt2.y);
                 owner.dispatchEvent(new RoxGestureEvent(RoxGestureEvent.GESTURE_PAN, pt.lx, pt.ly, pt.sx, pt.sy, pan));
                 setMove(pt, plpt1);
-            } else if (prim && (type == RoxGestureEvent.TOUCH_END || type == RoxGestureEvent.TOUCH_OUT)) {
+            } else if (prim && (type == RoxGestureEvent.TOUCH_END || (type == RoxGestureEvent.TOUCH_OUT && e.target == owner))) {
                 if (swipeTimeout <= 0 || pt.time - touch0.time < swipeTimeout) {
                     var beginpt = touchList.pop(), endpt: TouchPoint = null;
                     for (i in touchList) {
@@ -211,18 +211,20 @@ class RoxGestureAgent {
                     if (endpt != null) {
                         var dx: Float, dy: Float;
                         var angle = Math.atan2(dy = beginpt.ly - endpt.ly, dx = beginpt.lx - endpt.lx);
-                        var velocity = Point.polar(new Point(dx, dy).length / (beginpt.time - endpt.time) / 3, angle); // TODO: velocity seems to fast
+                        var velocity = Point.polar(new Point(dx, dy).length / (beginpt.time - endpt.time) / 4, angle); // TODO: velocity seems to fast
                         owner.dispatchEvent(new RoxGestureEvent(RoxGestureEvent.GESTURE_SWIPE, pt.lx, pt.ly, pt.sx, pt.sy, velocity));
                     }
                 }
                 setReady();
             } else if (!prim && type == RoxGestureEvent.TOUCH_BEGIN) {
+                owner.dispatchEvent(new RoxGestureEvent(RoxGestureEvent.GESTURE_BEGIN, pt.lx, pt.ly, pt.sx, pt.sy));
                 setTwoFingerMove(pt);
             } else {
                 handled = false;
             }
         case TWO_FINGER_MOVE:
             if (type == RoxGestureEvent.TOUCH_END) {
+                owner.dispatchEvent(new RoxGestureEvent(RoxGestureEvent.GESTURE_END, pt.lx, pt.ly, pt.sx, pt.sy));
                 setReady();
             } else if (type == RoxGestureEvent.TOUCH_MOVE) {
                 var pt1 = prim ? touch1 : touch0, pt2 = prim ? touch0 : touch1;

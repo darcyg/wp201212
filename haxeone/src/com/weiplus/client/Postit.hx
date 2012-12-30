@@ -1,5 +1,6 @@
 package com.weiplus.client;
 
+import nme.events.Event;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.ui.RoxNinePatch;
 import com.roxstudio.haxe.game.GfxUtil;
@@ -32,7 +33,7 @@ class Postit extends Sprite {
     private static inline var FONT_SIZE_RATIO = 24 / 600;
     private static inline var MIN_FONT_SIZE = 16.0;
 
-    private var image: RoxBitmapLoader;
+    public var image: RoxBitmapLoader;
     private var playButton: RoxFlowPane;
     private var imageLabel: RoxFlowPane;
 
@@ -115,6 +116,11 @@ class Postit extends Sprite {
 
     }
 
+    private function onPlay(e) {
+        trace("Postit.onPlay");
+        this.dispatchEvent(new Event(Event.SELECT));
+    }
+
     private function update() {
         var imw = width, imh = image.bitmapData.height * imageScale;
         if (placeholder != null) removeChild(placeholder);
@@ -133,7 +139,7 @@ class Postit extends Sprite {
                 graphics.lineTo(0, r);
                 graphics.endFill();
                 if (status.appData.type != AppData.IMAGE) {
-                    playButton = UiUtil.button("res/btn_play.png");
+                    playButton = UiUtil.button("res/btn_play.png", onPlay);
                     playButton.rox_scale(imw / 640);
                     playButton.rox_anchor(UiUtil.CENTER).rox_move(imw / 2, imh / 2);
                     addChild(playButton);

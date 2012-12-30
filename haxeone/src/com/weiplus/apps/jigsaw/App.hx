@@ -1,5 +1,8 @@
 package com.weiplus.apps.jigsaw;
 
+import flash.geom.Rectangle;
+import com.roxstudio.haxe.game.GfxUtil;
+import com.weiplus.client.PlayScreen;
 import com.eclecticdesignstudio.motion.easing.Elastic;
 import com.eclecticdesignstudio.motion.Actuate;
 import com.roxstudio.haxe.ui.RoxScreen;
@@ -9,7 +12,6 @@ import com.roxstudio.haxe.events.RoxGestureEvent;
 import com.roxstudio.haxe.ui.RoxGestureAgent;
 import com.roxstudio.haxe.ui.RoxApp;
 import com.roxstudio.haxe.ui.RoxAnimate;
-import com.weiplus.client.BaseScreen;
 import nme.display.BitmapData;
 import nme.display.Sprite;
 import nme.geom.Point;
@@ -19,7 +21,7 @@ using com.roxstudio.haxe.ui.UiUtil;
 /**
 * Jigsaw App
 **/
-class App extends BaseScreen {
+class App extends PlayScreen {
 
     public var groups: IntHash<TileGroup>;
     public var columns: Int;
@@ -31,16 +33,10 @@ class App extends BaseScreen {
     private var victory: Bool;
     private var board: Sprite;
 
-    override public function onCreate() {
-        super.onCreate();
-        var btnBack = new Sprite().rox_button("res/btnBack.png", "btnBack", function(e) { finish(RoxScreen.OK); } );
-        addTitleButton(btnBack, 12, 12);
-    }
-
     override public function onNewRequest(data: Dynamic) {
         if (data == null) data = getTestData();
-        shape = data.shape;
-        shapeSideLen = data.shapeSideLen;
+        shape = ImageUtil.getBitmapData("res/shape_new.png");
+        shapeSideLen = 184;
         image = data.image;
         sideLen = data.sideLen;
 
@@ -82,9 +78,8 @@ class App extends BaseScreen {
     override public function createContent(designHeight: Float) : Sprite {
         var content = new Sprite();
         board = new Sprite();
-        board.graphics.beginFill(0x0000FF, 0.2);
-        board.graphics.drawRect(-500, -500, 1000 + screenWidth, 1000 + designHeight * d2rScale);
-        board.graphics.endFill();
+        GfxUtil.rox_fillRect(board.graphics, 0x01FFFFFF, -500, -500, 1000 + screenWidth, 1000 + designHeight * d2rScale);
+
         var agent = new RoxGestureAgent(board);
         board.addEventListener(RoxGestureEvent.GESTURE_PAN, agent.getHandler());
         board.addEventListener(RoxGestureEvent.GESTURE_PINCH, agent.getHandler());
@@ -123,11 +118,11 @@ class App extends BaseScreen {
                     }
                 }
             }
-            if (Lambda.count(mygroup) == columns * rows) { // complete
+            if (!victory && Lambda.count(mygroup) == columns * rows) { // complete
                 victory = true;
                 trace("--victory!!--");
                 if (content.getChildByName("tipsbar") == null) {
-                    var tip = new Sprite().rox_button("res/tipsbar.png").rox_move(0, -130).rox_scale(d2rScale);
+                    var tip = UiUtil.bitmap("res/bg_play_tip.png").rox_move(0, -130).rox_scale(d2rScale);
                     content.addChild(tip);
                     Actuate.tween(tip, 1.0, { y: -10 }).ease(Elastic.easeOut);
                 }

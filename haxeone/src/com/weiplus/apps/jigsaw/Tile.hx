@@ -54,7 +54,8 @@ class Tile extends Sprite {
 
     private function update() {
         var sl = sideLen, ml = maxLen;
-        var r = new Rectangle(colIndex * sl - (ml - sl) / 2, rowIndex * sl - (ml - sl) / 2, ml, ml);
+        var offx = (image.width - jigsaw.columns * sl) / 2, offy = (image.height - jigsaw.rows * sl) / 2;
+        var r = new Rectangle(offx + colIndex * sl - (ml - sl) / 2, offy + rowIndex * sl - (ml - sl) / 2, ml, ml);
         var p = new Point(0, 0);
         if (r.x < 0) {
             p.x = -r.x - 1;
@@ -151,6 +152,8 @@ class Tile extends Sprite {
                 obuf[i] = mb; // obuf.writeByte(mb);
             } else if (mb > 100 && mb < 155) {
                 obuf[i] = bb; // obuf.writeByte(bb);
+            } else if (mb > 220) {
+                obuf[i] = 255;
             } else { // mb != 127
                 var v = (bb * mb) >> 7;
                 obuf[i] = v > 255 ? 255 : v;

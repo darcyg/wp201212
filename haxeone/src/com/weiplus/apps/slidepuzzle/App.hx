@@ -1,5 +1,6 @@
 package com.weiplus.apps.slidepuzzle;
 
+import com.weiplus.client.PlayScreen;
 import com.eclecticdesignstudio.motion.easing.Elastic;
 import com.eclecticdesignstudio.motion.Actuate;
 import com.roxstudio.haxe.ui.RoxScreen;
@@ -9,7 +10,6 @@ import com.roxstudio.haxe.events.RoxGestureEvent;
 import com.roxstudio.haxe.ui.RoxGestureAgent;
 import com.roxstudio.haxe.ui.RoxApp;
 import com.roxstudio.haxe.ui.RoxAnimate;
-import com.weiplus.client.BaseScreen;
 import nme.display.BitmapData;
 import nme.display.Sprite;
 import nme.geom.Point;
@@ -19,7 +19,7 @@ using com.roxstudio.haxe.ui.UiUtil;
 /**
 * Swap Puzzle App
 **/
-class App extends BaseScreen {
+class App extends PlayScreen {
 
     public var map: Array<Array<Tile>>;
     public var columns: Int;
@@ -33,15 +33,9 @@ class App extends BaseScreen {
     private var boardh: Float;
     private var visibleHeight: Float;
 
-    override public function onCreate() {
-        super.onCreate();
-        var btnBack = new Sprite().rox_button("res/btnBack.png", "btnBack", function(e) { finish(RoxScreen.OK); } );
-        addTitleButton(btnBack, 12, 12);
-    }
-
     override public function onNewRequest(data: Dynamic) {
         if (data == null) data = getTestData();
-        shape = ImageUtil.getBitmapData("res/shape200.png");
+        shape = ImageUtil.getBitmapData("res/shape184.png");
         image = data.image;
         sideLen = data.sideLen;
 
@@ -79,12 +73,6 @@ class App extends BaseScreen {
                 map[i][j] = t;
             }
         }
-    }
-
-    override public function onHidden() {
-        board.rox_removeAll();
-        var sp = content.getChildByName("tipsbar");
-        if (sp != null) content.removeChild(sp);
     }
 
     override public function createContent(designHeight: Float) : Sprite {
@@ -126,7 +114,7 @@ class App extends BaseScreen {
             }
             if (victory) {
                 trace("--victory!!--");
-                var tip = new Sprite().rox_button("res/tipsbar.png").rox_move(0, -130).rox_scale(d2rScale);
+                var tip = UiUtil.bitmap("res/bg_play_tip.png").rox_move(0, -130).rox_scale(d2rScale);
                 content.addChild(tip);
                 Actuate.tween(tip, 1.0, { y: -10 }).ease(Elastic.easeOut);
             }

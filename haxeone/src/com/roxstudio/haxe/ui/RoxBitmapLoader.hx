@@ -1,18 +1,17 @@
 package com.roxstudio.haxe.ui;
 
-import nme.display.Bitmap;
 import com.roxstudio.haxe.game.ImageUtil;
-import nme.events.SecurityErrorEvent;
-import nme.errors.SecurityError;
-import nme.net.URLLoaderDataFormat;
+import nme.display.Bitmap;
+import nme.display.BitmapData;
 import nme.display.DisplayObject;
 import nme.display.Loader;
-import nme.events.ProgressEvent;
-import nme.events.IOErrorEvent;
+import nme.errors.Error;
 import nme.events.Event;
+import nme.events.IOErrorEvent;
+import nme.events.ProgressEvent;
 import nme.net.URLRequest;
 import nme.net.URLLoader;
-import nme.display.BitmapData;
+import nme.net.URLLoaderDataFormat;
 
 class RoxBitmapLoader {
 
@@ -50,9 +49,11 @@ class RoxBitmapLoader {
             loader.load(new URLRequest(url));
             loader.addEventListener(Event.COMPLETE, onComplete);
             loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
-            loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onError);
+#if !html5
+            loader.addEventListener(nme.events.SecurityErrorEvent.SECURITY_ERROR, onError);
+#end
             loader.addEventListener(ProgressEvent.PROGRESS, onProgress);
-        } catch (e: SecurityError) {
+        } catch (e: Error) {
             onError(e);
         }
     }

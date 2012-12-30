@@ -192,7 +192,7 @@ class UiUtil {
     }
 
     public static inline function byteArray(?length: Null<Int>) : ByteArray {
-#if flash
+#if (flash || html5)
         var bb = new ByteArray();
         if (length != null) bb.length = length;
         return bb;

@@ -44,6 +44,8 @@ class Tile extends Sprite {
 
     private function update() {
         var sl = sideLen;
+        var offx = (image.width - app.columns * sl) / 2, offy = (image.height - app.rows * sl) / 2;
+        var r = new Rectangle(offx + colIndex * sl, offy + rowIndex * sl, sl, sl);
         var r = new Rectangle(colIndex * sl, rowIndex * sl, sl, sl);
         var p = new Point(0, 0);
         bmd.copyPixels(image, r, p);
@@ -62,6 +64,8 @@ class Tile extends Sprite {
                 obuf[i] = mb; // obuf.writeByte(mb);
             } else if (mb > 100 && mb < 155) {
                 obuf[i] = bb; // obuf.writeByte(bb);
+            } else if (mb > 220) {
+                obuf[i] = 255;
             } else { // mb != 127
                 var v = (bb * mb) >> 7;
                 obuf[i] = v > 255 ? 255 : v;

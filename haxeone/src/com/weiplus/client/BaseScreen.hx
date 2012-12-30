@@ -22,6 +22,8 @@ class BaseScreen extends RoxScreen {
     public var d2rScale: Float;
     public var content: Sprite;
     public var title: Sprite;
+    public var btnBack: RoxFlowPane;
+    public var hasBack: Bool = true;
     private var titleBtnOffsetL: Float;
     private var titleBtnOffsetR: Float;
 
@@ -41,6 +43,10 @@ class BaseScreen extends RoxScreen {
             titleBar.addChild(title.rox_anchor(UiUtil.CENTER).rox_move(titleBar.width / 2, titleBar.height / 2));
         }
         titleBar.rox_scale(d2rScale);
+        btnBack = UiUtil.button(UiUtil.TOP_LEFT, null, "返回", 0, 36, "res/btn_back.9.png", function(e) { finish(RoxScreen.CANCELED); } );
+        if (hasBack) {
+            addTitleButton(btnBack, UiUtil.LEFT);
+        }
         content = createContent((designHeight - TOP_HEIGHT) * d2rScale);
         content.rox_move(0, TOP_HEIGHT * d2rScale);
         addChild(content);

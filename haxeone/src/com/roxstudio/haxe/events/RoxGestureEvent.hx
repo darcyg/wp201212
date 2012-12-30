@@ -21,8 +21,10 @@ class RoxGestureEvent extends Event {
     public static inline var GESTURE_LONG_PRESS = "rox_gesture_long_press";
     public static inline var GESTURE_PAN = "rox_gesture_pan";
     public static inline var GESTURE_SWIPE = "rox_gesture_swipe";
+    public static inline var GESTURE_BEGIN = "rox_gesture_begin";
     public static inline var GESTURE_PINCH = "rox_gesture_pinch";
     public static inline var GESTURE_ROTATION = "rox_gesture_rotation";
+    public static inline var GESTURE_END = "rox_gesture_end";
 
     public var localX(default, null): Float;
     public var localY(default, null): Float;

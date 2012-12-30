@@ -1,10 +1,9 @@
 package com.roxstudio.haxe.ui;
 
-import com.roxstudio.haxe.ui.UiUtil;
-import nme.display.Bitmap;
-import nme.display.DisplayObject;
 import com.roxstudio.haxe.game.ImageUtil;
+import nme.display.Bitmap;
 import nme.display.BitmapData;
+import nme.display.DisplayObject;
 import nme.display.Sprite;
 
 using com.roxstudio.haxe.ui.UiUtil;

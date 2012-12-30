@@ -8,6 +8,7 @@ import nme.utils.ByteArray;
  * ...
  * @author Rocks Wang
  */
+#if cpp
 import nme.Assets;
 
 class GbTracer {
@@ -19,10 +20,8 @@ class GbTracer {
 	}
 	
 	public static function init(inDataFile: String) {
-#if cpp
 		u2g = Assets.getBytes(inDataFile);
 		Log.trace = gbTrace;
-#end
 	}
 	
 	private static function gbTrace(v: Dynamic, ?inf: PosInfos) : Void {
@@ -64,3 +63,8 @@ class GbTracer {
 	
 
 }
+#else
+class GbTracer {
+    public static function init(f: String) { }
+}
+#end

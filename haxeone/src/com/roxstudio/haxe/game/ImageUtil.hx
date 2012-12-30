@@ -103,7 +103,7 @@ class ImageUtil {
     }
 
     public static function loadBitmapData(inBitmapPath: String, ?inAlphaBitmapPath: String, ?inTransparentPixel: Point): BitmapData {
-        var bmp: BitmapData = Assets.getBitmapData(inBitmapPath);
+        var bmp: BitmapData = Assets.getBitmapData(inBitmapPath, false); // not using cache, image will be managed by engine
         var transparent = #if html5 true #else bmp.transparent #end ;
 #if debug
         trace("bitmap loaded: path=" + inBitmapPath + ", width=" + bmp.width + ", height=" + bmp.height + ", transparent=" + transparent);
