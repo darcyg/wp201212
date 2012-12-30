@@ -83,8 +83,10 @@ class RoxNinePatchData {
         if (y2 < y1) { y1 = 0; y2 = h - 1; }
         if (b2 < b1) { b1 = 0; b2 = w - 1; }
         if (r2 < r1) { r1 = 0; r2 = h - 1; }
+        var newbmd = new BitmapData(w, h, true, 0);
+        newbmd.copyPixels(bmd, new Rectangle(1, 1, w, h), new Point(0, 0));
         return new RoxNinePatchData(new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1),
-                new Rectangle(b1, r1, b2 - b1 + 1, r2 - r1 + 1), bmd,
-                new Rectangle(1, 1, w, h));
+                new Rectangle(b1, r1, b2 - b1 + 1, r2 - r1 + 1), newbmd,
+                new Rectangle(0, 0, w, h));
     }
 }

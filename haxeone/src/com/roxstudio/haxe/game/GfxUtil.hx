@@ -22,4 +22,13 @@ class GfxUtil {
         return g;
     }
 
+    public static inline function rox_fillRoundRect(g: Graphics, color: Int, x: Float, y: Float, w: Float, h: Float,
+                                                    hRadius: Float = 6, ?vRadius: Null<Float>) {
+        g.beginFill(color & 0xFFFFFF, (color >>> 24) / 255);
+        if (vRadius == null) vRadius = hRadius;
+        g.drawRoundRect(x, y, w, h, 2 * hRadius, 2 * vRadius);
+        g.endFill();
+        return g;
+    }
+
 }

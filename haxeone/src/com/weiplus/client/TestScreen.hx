@@ -1,5 +1,8 @@
 package com.weiplus.client;
 
+import com.weiplus.client.model.User;
+import com.weiplus.client.model.AppData;
+import com.weiplus.client.model.Status;
 import nme.geom.Point;
 import com.roxstudio.haxe.events.RoxGestureEvent;
 import com.roxstudio.haxe.ui.RoxGestureAgent;
@@ -128,6 +131,25 @@ class TestScreen extends BaseScreen {
 
         });
         content.addChild(textscale.rox_move(50, 200));
+
+        var status = new Status();
+        status.text = "【苹果电视要来了?】";
+        status.createdAt = new Date(2012, 11, 29, 17, 49, 11);
+        var appdata: AppData = status.appData = new AppData();
+        appdata.label = "记录我的心情点滴";
+        appdata.type = "jigsaw";
+        appdata.image = "res/content1pot.jpg";
+        appdata.width = appdata.height = 512;
+        var user: User = status.user = new User();
+        user.name = "李开复";
+        user.profileImage = "res/avatar1.png";
+        var postit = new Postit(status, 480, false);
+
+        var shadow = new RoxNinePatch(ImageUtil.getNinePatchData("res/shadow6.9.png"));
+        shadow.setDimension(postit.width + 3, postit.height + 6);
+        content.addChild(shadow.rox_move(10, 11));
+        content.addChild(postit.rox_move(12, 12));
+
         return content;
     }
 

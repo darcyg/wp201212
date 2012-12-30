@@ -26,7 +26,7 @@ class RoxAsyncBitmap extends Sprite {
         this.loadingDisplay = loadingDisplay;
         this.errorDisplay = errorDisplay;
         loader = ImageUtil.getBitmapLoader(url);
-        if (loader.status == RoxBitmapLoader.LOADING) {
+        if (loader.status == RoxBitmapLoader.READY) {
             loader.load(update);
         }
         update();
@@ -34,7 +34,7 @@ class RoxAsyncBitmap extends Sprite {
 
     private function update() {
         var dp: DisplayObject = switch (loader.status) {
-            case RoxBitmapLoader.READY:
+            case RoxBitmapLoader.OK:
                 new Bitmap(loader.bitmapData);
             case RoxBitmapLoader.ERROR:
                 errorDisplay;

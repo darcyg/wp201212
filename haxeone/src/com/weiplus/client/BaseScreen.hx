@@ -50,7 +50,7 @@ class BaseScreen extends RoxScreen {
         addChild(titleBar);
     }
 
-    public inline function addTitleButton(btn: RoxFlowPane, align: Int) {
+    public function addTitleButton(btn: RoxFlowPane, align: Int) {
         if (align == UiUtil.RIGHT) {
             btn.anchor = UiUtil.RIGHT | UiUtil.VCENTER;
             titleBar.addChild(btn.rox_move(titleBtnOffsetR, TOP_HEIGHT / 2));
@@ -59,6 +59,15 @@ class BaseScreen extends RoxScreen {
             btn.anchor = UiUtil.LEFT | UiUtil.VCENTER;
             titleBar.addChild(btn.rox_move(titleBtnOffsetL, TOP_HEIGHT / 2));
             titleBtnOffsetL += btn.width + BTN_SPACING;
+        }
+    }
+
+    public inline function removeTitleButton(btn: RoxFlowPane) {
+        titleBar.removeChild(btn);
+        if (btn.anchor == UiUtil.RIGHT | UiUtil.VCENTER) {
+            titleBtnOffsetR += btn.width + BTN_SPACING;
+        } else {
+            titleBtnOffsetL -= btn.width + BTN_SPACING;
         }
     }
 

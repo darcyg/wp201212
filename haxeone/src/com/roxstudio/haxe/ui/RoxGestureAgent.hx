@@ -85,8 +85,8 @@ class RoxGestureAgent {
         return callback(handleEvent, flags);
     }
 
-    public inline function swipeScroll(interval: Float, properties: Dynamic) {
-        scrollTimer = cast(Actuate.tween(owner, interval, properties, false));
+    public inline function swipeScroll(target: Dynamic, interval: Float, properties: Dynamic) {
+        scrollTimer = cast(Actuate.tween(target, interval, properties, false));
     }
 
     public inline function stopScroll() {
@@ -103,7 +103,7 @@ class RoxGestureAgent {
             case RoxGestureEvent.GESTURE_SWIPE:
                 var dx = flags & PAN_X != 0 ? e.extra.x * SWIPE_SCROLL_TIME : 0;
                 var dy = flags & PAN_Y != 0 ? e.extra.y * SWIPE_SCROLL_TIME : 0;
-                swipeScroll(SWIPE_SCROLL_TIME, { x: sp.x + dx, y: sp.y + dy });
+                swipeScroll(owner, SWIPE_SCROLL_TIME, { x: sp.x + dx, y: sp.y + dy });
             case RoxGestureEvent.GESTURE_PINCH:
                 var scale: Float = e.extra;
                 var spt = sp.parent.localToGlobal(new Point(sp.x, sp.y));

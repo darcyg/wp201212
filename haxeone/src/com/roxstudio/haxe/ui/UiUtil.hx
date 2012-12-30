@@ -83,6 +83,10 @@ class UiUtil {
         return sp;
     }
 
+    public inline static function ninePatch(ninePatchPath: String) : RoxNinePatch {
+        return new RoxNinePatch(ImageUtil.getNinePatchData(ninePatchPath));
+    }
+
     private static var defaultBg: RoxNinePatchData;
     public static function buttonBackground() : RoxNinePatch {
         if (defaultBg == null) {
@@ -112,7 +116,7 @@ class UiUtil {
             var i1 = iconPath.lastIndexOf("/"), i2 = iconPath.lastIndexOf(".");
             name = iconPath.substr(i1 + 1, i2 - i1 - 1);
         }
-        var bg = ninePatchPath != null ? new RoxNinePatch(ImageUtil.getNinePatchData(ninePatchPath)) : null;
+        var bg = ninePatchPath != null ? ninePatch(ninePatchPath) : null;
         var children: Array<DisplayObject> = [];
         if (iconPath != null) children.push(rox_smooth(new Bitmap(ImageUtil.getBitmapData(iconPath))));
         if (text != null) children.push(staticText(text, fontColor, fontSize));

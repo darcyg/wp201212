@@ -1,5 +1,7 @@
 package com.roxstudio.haxe.ui;
 
+import nme.display.Bitmap;
+import com.roxstudio.haxe.game.ImageUtil;
 import nme.events.SecurityErrorEvent;
 import nme.errors.SecurityError;
 import nme.net.URLLoaderDataFormat;
@@ -14,12 +16,13 @@ import nme.display.BitmapData;
 
 class RoxBitmapLoader {
 
+    public static inline var READY = 0;
     public static inline var LOADING = 1;
-    public static inline var READY = 2;
+    public static inline var OK = 2;
     public static inline var ERROR = 3;
 
     public var url(default, null): String;
-    public var status(default, null): Int = LOADING;
+    public var status(default, null): Int = READY;
     public var progress(default, null): Float = 0.0; // 0.0~1.0
     public var bytesTotal(default, null): Float = 0.0;
     public var bitmapData: BitmapData;
@@ -29,12 +32,20 @@ class RoxBitmapLoader {
 
     public function new(url: String) {
         this.url = url;
-        loader = new URLLoader();
-        loader.dataFormat = URLLoaderDataFormat.BINARY;
+        if (url.length > 7 && (url.substr(0, 7) == "http://" || url.substr(0, 7) == "https:/")) {
+            loader = new URLLoader();
+            loader.dataFormat = URLLoaderDataFormat.BINARY;
+        } else { // asset
+            bitmapData = ImageUtil.loadBitmapData(url);
+            status = OK;
+            progress = 1.0;
+        }
     }
 
     public function load(notifyCallback: Void -> Void) {
+        if (status != READY) return;
         this.notifyCallback = notifyCallback;
+        status = LOADING;
         try {
             loader.load(new URLRequest(url));
             loader.addEventListener(Event.COMPLETE, onComplete);
@@ -47,12 +58,10 @@ class RoxBitmapLoader {
     }
 
     private inline function onComplete(e: Dynamic) {
-        status = READY;
+        status = OK;
         var ldr = new Loader();
         ldr.loadBytes(cast(loader.data));
-        var dp = ldr.content;
-        bitmapData = new BitmapData(Std.int(dp.width), Std.int(dp.height), true, 0);
-        bitmapData.draw(dp);
+        bitmapData = cast(ldr.content, Bitmap).bitmapData;
         loader = null;
         notifyCallback();
     }
@@ -72,8 +81,10 @@ class RoxBitmapLoader {
     public function dispose() {
         url = null;
         notifyCallback = null;
-        bitmapData.dispose();
-        bitmapData = null;
+        if (bitmapData != null) {
+            bitmapData.dispose();
+            bitmapData = null;
+        }
         loader = null;
     }
 

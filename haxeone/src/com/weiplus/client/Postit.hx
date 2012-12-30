@@ -1,37 +1,36 @@
 package com.weiplus.client;
 
 import com.roxstudio.haxe.ui.UiUtil;
-import com.weiplus.client.model.AppData;
+import com.roxstudio.haxe.ui.RoxNinePatch;
+import com.roxstudio.haxe.game.GfxUtil;
+import com.roxstudio.haxe.game.ImageUtil;
+import com.roxstudio.haxe.ui.RoxApp;
+import com.roxstudio.haxe.ui.RoxNinePatchData;
+import com.roxstudio.haxe.ui.RoxNinePatch;
 import com.roxstudio.haxe.ui.RoxBitmapLoader;
 import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.ui.RoxAsyncBitmap;
-import neash.geom.Rectangle;
-import com.roxstudio.haxe.game.GameUtil;
-import com.roxstudio.haxe.game.ImageUtil;
+import com.weiplus.client.model.AppData;
 import com.weiplus.client.model.Status;
 import com.weiplus.client.model.Comment;
 import nme.display.Bitmap;
 import nme.display.Sprite;
+import nme.display.DisplayObject;
+import nme.display.BitmapData;
+import nme.geom.Matrix;
+import nme.geom.Rectangle;
 import nme.text.TextField;
-import nme.text.TextFormat;
 
 using com.roxstudio.haxe.ui.UiUtil;
 
 class Postit extends Sprite {
 
-    private static inline var MIN_WIDTH = 150;
-    private static inline var MIN_MARGIN = 5;
-    private static inline var MARGIN_RATIO = 1 / 40;
-    private static inline var MIN_SPACING = 2;
-    private static inline var SPACING_RATIO = 1 / 40;
-    private static inline var AVATAR_RATIO = 60 / 450; // 50x50 in 480x800 screen
+    public var status: Status;
 
-    private static inline var TITLE_TEXT_RATIO = 4 / 30;
-    private static inline var TEXT_RATIO = 1 / 10; // 32 -> 240
-    private static inline var MAX_TITLE_TEXT_SIZE = 24;
-    private static inline var MIN_TITLE_TEXT_SIZE = 14;
-    private static inline var MAX_TEXT_SIZE = 18;
-    private static inline var MIN_TEXT_SIZE = 12;
+    private static inline var MARGIN_RATIO = 1 / 40;
+
+    private static inline var FONT_SIZE_RATIO = 24 / 600;
+    private static inline var MIN_FONT_SIZE = 16.0;
 
     private var image: RoxBitmapLoader;
     private var playButton: RoxFlowPane;
@@ -40,103 +39,113 @@ class Postit extends Sprite {
     private var userAvatar: RoxFlowPane;
     private var userLabel: TextField;
     private var dateLabel: RoxFlowPane;
-    private var textLabel: TextField;
     private var infoLabel: RoxFlowPane; // numRetweets, numComments, numLikes etc.
+    private var imageScale: Float;
+    private var imageOffset: Float;
+    private var placeholder: DisplayObject;
 
-    public var status: Status;
-
-    public function new(inStatus: Status, width: Float) {
+    public function new(inStatus: Status, width: Float, fullMode: Bool = false) {
         super();
         status = inStatus;
-        image = ImageUtil.getBitmapLoader(status.appData.image, imageOk);
-        if (status.appData.type != AppData.IMAGE) addChild(playButton = UiUtil.button("res/btn_play.png"));
-//            addChild(infoLabel = new TextField());
-        addChild(imageLabel = new RoxFlowPane());
-        addChild(userAvatar = new RoxFlowPane());
-        addChild(userLabel = new TextField());
-        addChild(dateLabel = new TextField());
-        addChild(textLabel = new TextField());
-        image.addChild(new Bitmap(ImageUtil.getBitmapData(status.appData.image)).rox_smooth());
-        userAvatar.addChild(new Bitmap(ImageUtil.getBitmapData(status.user.profileImage)).rox_smooth());
-        update(width);
+        setWidth(width, fullMode);
     }
 
-    private function imageOk() {
+    public function setWidth(width: Float, fullMode: Bool = false) {
+        this.rox_removeAll();
+        this.graphics.clear();
+        var margin = width * MARGIN_RATIO;
+        var fontsize = width * FONT_SIZE_RATIO;
+        if (fontsize < MIN_FONT_SIZE) fontsize = MIN_FONT_SIZE;
+        var appdata = status.appData;
+        var imw = appdata.width;
+        imageScale = imw > width ? width / imw : 1.0;
+        imageOffset = imw > width ? 0 : (width - imw) / 2;
+        var h = appdata.height * imageScale + margin;
+
+        var bub = UiUtil.bitmap("res/icon_bubble.png");
+        var layout = new RoxNinePatchData(new Rectangle(margin, 0, 20, 20), null, null, new Rectangle(0, 0, 20 + 2 * margin, 20 + margin));
+        var text = UiUtil.staticText(status.text, 0, fontsize, true, width - bub.width - 4 - 2 * layout.contentGrid.x);
+        imageLabel = new RoxFlowPane([ bub, text ], new RoxNinePatch(layout), UiUtil.TOP, [ 4 ]);
+        addChild(imageLabel.rox_move(0, h));
+        h += imageLabel.height;
+        var liney = h;
+        h += 2 + margin;
+        var head = new RoxAsyncBitmap(status.user.profileImage, 60, 60);
+        var avbg = UiUtil.ninePatch("res/avatar_bg.9.png");
+        userAvatar = new RoxFlowPane([ head ], avbg);
+        userLabel = UiUtil.staticText(status.user.name, 0xFF0000, fontsize + 4);
+        var clock = UiUtil.bitmap("res/icon_time.png");
+        var time = UiUtil.staticText(timeStr(status.createdAt), 0, fontsize);
+        var compact = new RoxNinePatchData(new Rectangle(0, 0, 20, 20));
+        dateLabel = new RoxFlowPane([ clock, time ], new RoxNinePatch(compact));
+        var tmp = new RoxFlowPane([ userLabel, dateLabel ], new RoxNinePatch(compact), UiUtil.LEFT);
+        var hlayout = new RoxFlowPane([ userAvatar, tmp ], new RoxNinePatch(layout), [ margin ]);
+        addChild(hlayout.rox_move(0, h));
+        h += hlayout.height;
+        if (fullMode) {
+            var praisebtn = UiUtil.button(UiUtil.TOP_LEFT, null, "赞(256)", "res/btn_common.9.png");
+            var commentbtn = UiUtil.button(UiUtil.TOP_LEFT, null, "评论(122)", "res/btn_common.9.png");
+            var morebtn = UiUtil.button(UiUtil.TOP_LEFT, null, "...", "res/btn_common.9.png");
+            infoLabel = new RoxFlowPane([ praisebtn, commentbtn, morebtn ], new RoxNinePatch(layout));
+            addChild(infoLabel.rox_move(0, h));
+            h += infoLabel.height;
+        }
+        GfxUtil.rox_fillRoundRect(graphics, 0xFFFFFFFF, 0, 0, width, h, 6);
+        GfxUtil.rox_line(graphics, 2, 0xFFE6E6E6, 10, liney, width - 10, liney);
+        image = ImageUtil.getBitmapLoader(status.appData.image);
+        if (image.status == RoxBitmapLoader.READY) {
+            image.load(update);
+        }
+        update();
+    }
+
+    private function timeStr(date: Date) : String {
+        var now = Date.now().getTime() / 1000;
+        var time = date.getTime() / 1000;
+        var dt = now - time;
+        if (dt <= 60) {
+            return "刚刚";
+        } else if (dt <= 3600) {
+            return "" + Std.int(dt / 60) + "分钟前";
+        } else if (dt <= 86400) {
+            return "" + Std.int(dt / 3600) + "小时前";
+        } else {
+            return "" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes();
+        }
 
     }
 
-    public function update(inWidth: Float) {
-        if (image == null) {
+    private function update() {
+        var imw = width, imh = image.bitmapData.height * imageScale;
+        if (placeholder != null) removeChild(placeholder);
+        switch (image.status) {
+            case RoxBitmapLoader.OK:
+                var bmd = new BitmapData(Std.int(imw), Std.int(imh), true, 0);
+                bmd.draw(image.bitmapData, new Matrix(imageScale, 0, 0, imageScale, imageOffset, 0), true);
+                graphics.beginBitmapFill(bmd, false, false);
+                var r = 6;
+                graphics.moveTo(0, r);
+                graphics.curveTo(0, 0, r, 0);
+                graphics.lineTo(imw - r, 0);
+                graphics.curveTo(imw, 0, imw, r);
+                graphics.lineTo(imw, imh);
+                graphics.lineTo(0, imh);
+                graphics.lineTo(0, r);
+                graphics.endFill();
+                if (status.appData.type != AppData.IMAGE) {
+                    playButton = UiUtil.button("res/btn_play.png");
+                    playButton.rox_scale(imw / 640);
+                    playButton.rox_anchor(UiUtil.CENTER).rox_move(imw / 2, imh / 2);
+                    addChild(playButton);
+                }
+//                trace("im="+imw+","+imh+",scale="+imageScale+",offset="+imageOffset);
+            case RoxBitmapLoader.ERROR:
+                placeholder = UiUtil.staticText("载入失败");
+                addChild(placeholder.rox_move((imw - placeholder.width) / 2, (imh - placeholder.height) / 2));
+            case RoxBitmapLoader.LOADING:
+                placeholder = UiUtil.staticText("载入中...");
+                addChild(placeholder.rox_move((imw - placeholder.width) / 2, (imh - placeholder.height) / 2));
         }
-        trace("img="+image.width+","+image.height+",userAvatar="+userAvatar.width+","+userAvatar.height);
-        if (width == inWidth && !statusChanged) return;
-        var imgbmp = cast(image.getChildAt(0), Bitmap);
-        var avatarbmp = cast(userAvatar.getChildAt(0), Bitmap);
-        if (statusChanged) {
-            imgbmp.bitmapData = ImageUtil.getBitmapData(status.appData.image);
-            avatarbmp.bitmapData = ImageUtil.getBitmapData(status.user.profileImage);
-        }
-        var margin = inWidth * MARGIN_RATIO;
-        if (margin < MIN_MARGIN) margin = MIN_MARGIN;
-        var spacing = inWidth * SPACING_RATIO;
-        if (spacing < MIN_SPACING) spacing = MIN_SPACING;
-
-        var yoffset = margin;
-        var contentw = inWidth - 2 * margin;
-        var scale = contentw / imgbmp.bitmapData.width;
-        if (scale > 1) scale = 1;
-        var imgw = imgbmp.bitmapData.width * scale;
-        var imgh = imgbmp.bitmapData.height * scale;
-        image.rox_scale(scale).rox_move(margin + (contentw - imgw) / 2, yoffset);
-        yoffset += imgh + spacing;
-
-        var titletextsize = inWidth * TITLE_TEXT_RATIO;
-        titletextsize = titletextsize > MAX_TITLE_TEXT_SIZE ? MAX_TITLE_TEXT_SIZE :
-                        titletextsize < MIN_TITLE_TEXT_SIZE ? MIN_TITLE_TEXT_SIZE : titletextsize;
-        var format = new TextFormat().textFormat(0, titletextsize, 2); // center
-        imageLabel.rox_label(status.appData.label, format, false, contentw).rox_move(margin, yoffset);
-        yoffset += imageLabel.height + spacing;
-
-        var splitOffset = yoffset;
-        yoffset += spacing;
-
-        scale = inWidth * AVATAR_RATIO / avatarbmp.bitmapData.width;
-        userAvatar.rox_scale(scale).rox_move(margin, yoffset);
-        var avatarw = avatarbmp.bitmapData.width * scale;
-
-        var textsize = inWidth * TEXT_RATIO;
-        textsize = textsize > MAX_TEXT_SIZE ? MAX_TEXT_SIZE :
-                textsize < MIN_TEXT_SIZE ? MIN_TEXT_SIZE : textsize;
-        format = new TextFormat().textFormat(0x222222, textsize); // left (default)
-        userLabel.staticText(status.user.name, format, false);
-        userLabel.rox_move(margin + avatarw + spacing, yoffset + (avatarw - userLabel.height) / 2);
-        format = new TextFormat().textFormat(0x222222, textsize);
-        dateLabel.staticText("1分钟前", format, false);
-        dateLabel.rox_move(inWidth - margin - dateLabel.width, yoffset + (avatarw - dateLabel.height) / 2);
-        yoffset += avatarw + spacing / 2;
-
-        var avatarSplitOffset = yoffset;
-        yoffset += spacing / 2 + 2;
-
-        format = new TextFormat().textFormat(0x111111, textsize);
-        textLabel.staticText(status.text, format, true, contentw);
-        textLabel.rox_move(margin, yoffset);
-        var h = yoffset + textLabel.height + margin;
-
-        graphics.beginFill(0xFFFFFF);
-        graphics.drawRect(0, 0, inWidth, h);
-        graphics.endFill();
-        graphics.beginFill(0xDDDDDD);
-        graphics.drawRect(0, splitOffset, inWidth, h - splitOffset);
-        graphics.endFill();
-        graphics.lineStyle(1, 0xCCCCCC);
-        graphics.moveTo(0, avatarSplitOffset);
-        graphics.lineTo(inWidth, avatarSplitOffset);
-        graphics.lineStyle(1, 0xEEEEEE);
-        graphics.moveTo(0, avatarSplitOffset + 1);
-        graphics.lineTo(inWidth, avatarSplitOffset + 1);
-        graphics.lineStyle();
-        trace("w="+inWidth+",h="+h+",split="+splitOffset+",imgLabel="+imageLabel.height+",usrLabel="+userLabel.height+",txt="+textLabel.height);
     }
 
 }
