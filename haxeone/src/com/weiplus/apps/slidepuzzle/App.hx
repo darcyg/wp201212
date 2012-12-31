@@ -113,7 +113,7 @@ class App extends PlayScreen {
                 }
             }
             if (victory) {
-                trace("--victory!!--");
+//                trace("--victory!!--");
                 var tip = UiUtil.bitmap("res/bg_play_tip.png").rox_move(0, -130).rox_scale(d2rScale);
                 content.addChild(tip);
                 Actuate.tween(tip, 1.0, { y: -10 }).ease(Elastic.easeOut);
@@ -122,7 +122,6 @@ class App extends PlayScreen {
     }
 
     private function shuffle(a: Array<Int>) : Array<Int> {
-        trace(">>olda=" + a);
         var idx = a.length - 1;
         for (i in 0...a.length * 3) { // just count, i is not used
             var y = Std.int(idx / columns), x = idx % columns;
@@ -140,7 +139,6 @@ class App extends PlayScreen {
             }
             a[idx] = -1;
         }
-        trace(">>newa=" + a);
         return a;
     }
 

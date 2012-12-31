@@ -74,12 +74,6 @@ class App extends PlayScreen {
         }
     }
 
-    override public function onHidden() {
-        board.rox_removeAll();
-        var sp = content.getChildByName("tipsbar");
-        if (sp != null) content.removeChild(sp);
-    }
-
     override public function createContent(designHeight: Float) : Sprite {
         visibleHeight = designHeight * d2rScale;
         var content = new Sprite();
@@ -120,7 +114,7 @@ class App extends PlayScreen {
                 }
             }
             if (victory) {
-                trace("--victory!!--");
+//                trace("--victory!!--");
                 var tip = UiUtil.bitmap("res/bg_play_tip.png").rox_move(0, -130).rox_scale(d2rScale);
                 content.addChild(tip);
                 Actuate.tween(tip, 1.0, { y: -10 }).ease(Elastic.easeOut);

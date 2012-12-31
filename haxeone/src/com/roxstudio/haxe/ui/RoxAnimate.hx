@@ -10,6 +10,7 @@ class RoxAnimate {
     public static inline var SLIDE_LEFT = new RoxAnimate(SLIDE, "left");
     public static inline var SLIDE_RIGHT = new RoxAnimate(SLIDE, "right");
 
+    public static inline var NONE = 0; // no animate
     public static inline var SLIDE = 1; // arg: String = "up"/"right"/"down"/"left"
     public static inline var ZOOM_IN = 2; // popup, arg: Rectangle
     public static inline var ZOOM_OUT = 3; // shrink, arg: Rectangle
@@ -39,7 +40,7 @@ class RoxAnimate {
             default:
                 null;
         }
-        trace("reverseAnim:this.type="+type+",return=" + anim);
+//        trace("reverseAnim:this.type="+type+",return=" + anim);
         return anim;
     }
 

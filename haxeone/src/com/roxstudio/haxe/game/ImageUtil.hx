@@ -38,7 +38,7 @@ class ImageUtil {
             }
             buf.add("],");
         }
-        trace(">>>>disposing '" + groupId + "' :{{ " + buf + " }}");
+//        trace(">>>>disposing '" + groupId + "' :{{ " + buf + " }}");
         var arr = groups.get(groupId);
         if (arr == null) return;
         groups.remove(groupId);

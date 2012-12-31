@@ -69,12 +69,6 @@ class App extends PlayScreen {
         }
     }
 
-    override public function onHidden() {
-        board.rox_removeAll();
-        var sp = content.getChildByName("tipsbar");
-        if (sp != null) content.removeChild(sp);
-    }
-
     override public function createContent(designHeight: Float) : Sprite {
         var content = new Sprite();
         board = new Sprite();
@@ -120,7 +114,7 @@ class App extends PlayScreen {
             }
             if (!victory && Lambda.count(mygroup) == columns * rows) { // complete
                 victory = true;
-                trace("--victory!!--");
+//                trace("--victory!!--");
                 if (content.getChildByName("tipsbar") == null) {
                     var tip = UiUtil.bitmap("res/bg_play_tip.png").rox_move(0, -130).rox_scale(d2rScale);
                     content.addChild(tip);

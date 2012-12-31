@@ -1,5 +1,8 @@
 package com.weiplus.client;
 
+import flash.geom.Rectangle;
+import nme.display.Shape;
+import com.roxstudio.haxe.ui.RoxScreen;
 import com.eclecticdesignstudio.motion.Actuate;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
@@ -32,33 +35,24 @@ import com.weiplus.apps.swappuzzle.App;
 using com.roxstudio.haxe.ui.UiUtil;
 using com.roxstudio.haxe.game.GfxUtil;
 
-class HomeScreen extends BaseScreen {
+class UserScreen extends BaseScreen {
 
     private static inline var SPACING_RATIO = 1 / 40;
 
-    var btnSingleCol: RoxFlowPane;
-    var btnDoubleCol: RoxFlowPane;
-    var btnCol: RoxFlowPane;
     var main: Sprite;
     var mainh: Float;
     var viewh: Float;
     var agent: RoxGestureAgent;
     var numCol: Int = 2;
     var postits: Array<Postit>;
-    var animating: Bool = false;
 
     override public function onCreate() {
-        title = UiUtil.bitmap("res/icon_logo.png");
-        hasBack = false;
+        title = new Sprite();
+        title.addChild(UiUtil.staticText("用户资料", 0xFF0000, 36));
         super.onCreate();
-        btnCol = btnSingleCol = UiUtil.button("res/icon_single_column.png", null, "res/btn_common.9.png", onButton);
-        addTitleButton(btnCol, UiUtil.RIGHT);
-        btnDoubleCol = UiUtil.button("res/icon_double_column.png", null, "res/btn_common.9.png", onButton);
         agent = new RoxGestureAgent(content, RoxGestureAgent.GESTURE);
         content.addEventListener(RoxGestureEvent.GESTURE_PAN, onGesture);
         content.addEventListener(RoxGestureEvent.GESTURE_SWIPE, onGesture);
-        content.addEventListener(RoxGestureEvent.GESTURE_TAP, onGesture);
-        content.addEventListener(RoxGestureEvent.GESTURE_PINCH, onGesture);
     }
 
     override public function createContent(height: Float) : Sprite {
@@ -80,7 +74,7 @@ class HomeScreen extends BaseScreen {
         var bmd = ImageUtil.getBitmapData("res/bg_main_bottom.png");
         var npdata = new RoxNinePatchData(new Rectangle(0, 0, bmd.width, bmd.height), bmd);
         var btnpanel = new RoxFlowPane(null, null, UiUtil.LEFT | UiUtil.BOTTOM, btns,
-                new RoxNinePatch(npdata), UiUtil.BOTTOM, [ 2 ]);
+        new RoxNinePatch(npdata), UiUtil.BOTTOM, [ 2 ]);
         sp.addChild(btnpanel.rox_scale(d2rScale).rox_move(0, height));
 //        trace("btnpanel="+btnpanel.x+","+btnpanel.y+","+btnpanel.width+","+btnpanel.height);
         viewh = height - 95 * d2rScale;
@@ -109,9 +103,27 @@ class HomeScreen extends BaseScreen {
         }
         main.rox_removeAll();
         main.graphics.clear();
-        var colh: Array<Float> = [];
-        for (i in 0...numCol) colh.push(0);
+
         var spacing = screenWidth * SPACING_RATIO;
+
+        var shape = new Shape();
+        shape.graphics.rox_fillRoundRect(0xFFEEEEEE, 0, 0, 32, 32);
+        var bgbmd = new BitmapData(32, 32, true, 0);
+        bgbmd.draw(shape);
+        var bg = new RoxNinePatch(new RoxNinePatchData(new Rectangle(6, 6, 20, 20), new Rectangle(12, 12, 8, 8), bgbmd));
+        var panel = new RoxFlowPane(screenWidth - 2 * spacing, 100,
+                                    [ UiUtil.bitmap("res/data/head11.png"), UiUtil.staticText("Leody", 0, 30) ], bg, [ 100 ]);
+        var pshadow = new RoxNinePatch(ImageUtil.getNinePatchData("res/shadow6.9.png"));
+        pshadow.setDimension(panel.width + 3, panel.height + 6);
+        panel.rox_move(spacing, spacing);
+        pshadow.rox_move(panel.x - 2, panel.y);
+        main.addChild(pshadow);
+        main.addChild(panel);
+//        var panel = new Bitmap(bgbmd);
+//        main.addChild(panel.rox_move(spacing, spacing));
+
+        var colh: Array<Float> = [];
+        for (i in 0...numCol) colh.push(spacing + panel.height);
         var postitw = (screenWidth - (numCol + 1) * spacing) / numCol;
         var resetwidth = postits != null;
         if (postits == null) {
@@ -161,12 +173,12 @@ class HomeScreen extends BaseScreen {
         }
         mainh += spacing;
         main.graphics.rox_fillRect(0x01FFFFFF, 0, 0, main.width, main.height);
-
-        main.y = spacing - postity;
-        main.y = UiUtil.rangeValue(main.y, viewh - mainh, 0);
+        main.y = 0;
+//        main.y = spacing - postity;
+//        main.y = UiUtil.rangeValue(main.y, viewh - mainh, 0);
 
         if (sp1 != null) {
-            animating = true;
+//            animating = true;
             content.addChild(sp1.rox_move(bmd1.width / 2, bmd1.height / 2));
             if (numCol == 1) { // zoom in
                 Actuate.tween(sp1, 0.4, { scaleX: 4, scaleY: 4, alpha: 0 }).onComplete(animDone, [ sp1 ]);
@@ -187,11 +199,11 @@ class HomeScreen extends BaseScreen {
 
     private inline function animDone(sp: DisplayObject) {
         content.removeChild(sp);
-        animating = false;
+//        animating = false;
     }
 
     private function onGesture(e: RoxGestureEvent) {
-        if (animating) return;
+//        if (animating) return;
         switch (e.type) {
             case RoxGestureEvent.GESTURE_TAP:
                 for (i in 0...main.numChildren) {
@@ -213,57 +225,30 @@ class HomeScreen extends BaseScreen {
             case RoxGestureEvent.GESTURE_SWIPE:
                 var desty = UiUtil.rangeValue(main.y + e.extra.y * 2.0, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
                 agent.startTween(main, 2.0, { y: desty });
-            case RoxGestureEvent.GESTURE_PINCH:
-//                trace("pinch:numCol=" + numCol + ",extra=" + e.extra);
-                if (numCol > 1 && e.extra > 1) {
-                    removeTitleButton(btnCol);
-                    addTitleButton(btnCol = btnDoubleCol, UiUtil.RIGHT);
-                    update(1);
-                } else if (numCol == 1 && e.extra < 1) {
-                    removeTitleButton(btnCol);
-                    addTitleButton(btnCol = btnSingleCol, UiUtil.RIGHT);
-                    update(2);
-                }
         }
     }
 
     private function onButton(e: Event) {
-        if (animating) return;
+//        if (animating) return;
 //        trace("button " + e.target.name + " clicked");
         switch (e.target.name) {
-            case "icon_single_column":
-                removeTitleButton(btnCol);
-                addTitleButton(btnCol = btnDoubleCol, UiUtil.RIGHT);
-                update(1);
-            case "icon_double_column":
-                removeTitleButton(btnCol);
-                addTitleButton(btnCol = btnSingleCol, UiUtil.RIGHT);
-                update(2);
+            case "icon_settings":
+
             case "icon_home":
-//                startScreen(Type.getClassName(com.weiplus.client.TestGesture), new RoxAnimate(RoxAnimate.ZOOM_IN, new Rectangle(80, 80, 200, 300)));
+                finish(Type.getClassName(HomeScreen), RoxScreen.CANCELED);
             case "icon_selected":
-                startScreen(Type.getClassName(SelectedScreen));
+                startScreen(Type.getClassName(SelectedScreen), true);
             case "icon_maker":
-                startScreen(Type.getClassName(MakersScreen));
+                startScreen(Type.getClassName(MakersScreen), true);
             case "icon_account":
-                startScreen(Type.getClassName(UserScreen));
+
         }
     }
 
     private static var statuses = [
-    [ "趣图集锦", "res/data/head5.png", "这人民币折纸无敌了！", "res/data/17.jpg", "slidepuzzle", "120" ],
-    [ "王磊", "res/data/head2.png", "这网站的有些家伙，只能用这幅图形容了", "res/data/14.jpg", "image", "" ],
-    [ "中兴手机", "res/data/head6.png", "你能认出几个美国超人？", "res/data/16.jpg", "swappuzzle", "110" ],
-    [ "趣图集锦", "res/data/head5.png", "鸡蛋中的异类", "res/data/15.jpg", "image", "" ],
-    [ "王磊", "res/data/head2.png", "haXe才是移动平台的王者", "res/data/4.jpg", "jigsaw", "120" ],
-    [ "伏英娜", "res/data/head1.png", "晴朗的天空", "res/data/9.jpg", "jigsaw", "120" ],
-    [ "徐野", "res/data/head5.png", "转个搞笑图，等短信的表情", "res/data/7.jpg", "image", "" ],
-    [ "超级红裤衩", "res/data/head3.png", "兔子的征途是星辰大海！", "res/data/11.jpg", "slidepuzzle", "140" ],
-    [ "周鸿祎", "res/data/head4.png", "强敌环伺的360", "res/data/1.jpg", "jigsaw", "130" ],
-    [ "尤成", "res/data/head6.png", "猜猜谁是真正的凶手？", "res/data/12.jpg", "image", "" ],
-    [ "Christina", "res/data/head1.png", "This's my friend, is she beautiful?", "res/data/8.jpg", "jigsaw", "110" ],
-    [ "郝晓伟", "res/data/head7.png", "斑马的由来", "res/data/10.jpg", "image", "" ],
-    [ "姚卫峰", "res/data/head3.png", "我心目中的巨人，拼出来你就知道是谁了", "res/data/3.jpg", "swappuzzle", "110" ]
+    [ "Leody", "res/data/head1.png", "I like the sunshine, do you?", "res/data/9.jpg", "jigsaw", "120" ],
+    [ "Leody", "res/data/head1.png", "Very funny piggy!", "res/data/7.jpg", "image", "" ],
+    [ "Leody", "res/data/head1.png", "This's my friend, is she beautiful?", "res/data/8.jpg", "jigsaw", "110" ]
     ];
 
 }

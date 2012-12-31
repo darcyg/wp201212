@@ -84,9 +84,9 @@ class Postit extends Sprite {
         addChild(hlayout.rox_move(0, h));
         h += hlayout.height;
         if (fullMode) {
-            var praisebtn = UiUtil.button(UiUtil.TOP_LEFT, null, "赞(256)", "res/btn_common.9.png");
-            var commentbtn = UiUtil.button(UiUtil.TOP_LEFT, null, "评论(122)", "res/btn_common.9.png");
-            var morebtn = UiUtil.button(UiUtil.TOP_LEFT, null, "...", "res/btn_common.9.png");
+            var praisebtn = UiUtil.button(UiUtil.TOP_LEFT, null, "赞(256)", 0, fontsize + 2, "res/btn_common.9.png");
+            var commentbtn = UiUtil.button(UiUtil.TOP_LEFT, null, "评论(122)", 0, fontsize + 2, "res/btn_common.9.png");
+            var morebtn = UiUtil.button(UiUtil.TOP_LEFT, null, "...", 0, fontsize + 2, "res/btn_common.9.png");
             infoLabel = new RoxFlowPane([ praisebtn, commentbtn, morebtn ], new RoxNinePatch(layout));
             addChild(infoLabel.rox_move(0, h));
             h += infoLabel.height;
@@ -117,7 +117,6 @@ class Postit extends Sprite {
     }
 
     private function onPlay(e) {
-        trace("Postit.onPlay");
         this.dispatchEvent(new Event(Event.SELECT));
     }
 

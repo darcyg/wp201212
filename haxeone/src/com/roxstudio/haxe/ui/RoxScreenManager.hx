@@ -13,12 +13,12 @@ import nme.display.Sprite;
 class RoxScreenManager extends Sprite {
 
     private var screens: Hash<RoxScreen>;
-    private var stack: Array<StackItem>;
+    private var stack: List<StackItem>;
 
     public function new() {
         super();
         screens = new Hash<RoxScreen>();
-        stack = [];
+        stack = new List<StackItem>();
         RoxApp.stage.addEventListener(KeyboardEvent.KEY_UP, function(e: KeyboardEvent) {
             if (e.keyCode == 27 && stack.length > 1) {
                 var topscreen: RoxScreen = cast(getChildAt(0));
@@ -30,20 +30,20 @@ class RoxScreenManager extends Sprite {
         });
     }
 
-    public inline function addScreen(screen: RoxScreen) {
-        var className = Type.getClassName(Type.getClass(screen));
-        screens.set(className, screen);
-    }
-
-    public function startScreen(?source: RoxScreen, screenClassName: String, ?requestCode: Null<Int> = 1,
+    public function startScreen(?source: RoxScreen, screenClassName: String, ?finishSource: Bool = false,
+                                ?requestCode: Null<Int> = 1,
                                 ?requestData: Dynamic, ?animate: RoxAnimate) {
-        trace("startScreen,className=" + screenClassName);
+        var srcbmp: Bitmap = null;
+        if (finishSource && stack.length > 0) {
+            srcbmp = snap(source);
+            finishScreen(source, null, RoxScreen.CANCELED, null, new RoxAnimate(RoxAnimate.NONE, null));
+            source = stack.length > 0 ? screens.get(stack.first().className) : null;
+        }
         var dest = screens.get(screenClassName);
         if (dest == null) {
             ImageUtil.currentGroup = screenClassName;
             dest = Type.createInstance(Type.resolveClass(screenClassName), [ ]);
             dest.init(this, RoxApp.screenWidth, RoxApp.screenHeight);
-//            trace("class=" + Type.resolveClass(screenClassName) + ",dest=" + dest);
             if (dest == null) throw "Unknown screenClassName: " + screenClassName;
             screens.set(screenClassName, dest);
             dest.onCreate();
@@ -54,85 +54,93 @@ class RoxScreenManager extends Sprite {
         ImageUtil.currentGroup = screenClassName;
         dest.onNewRequest(requestData);
         if (source != null) {
-            startAnimate(source, dest, animate, false);
+            switchScreen(source, dest, false);
+            startAnimate(srcbmp != null ? srcbmp : snap(source), snap(dest), animate);
         } else {
             dest.x = dest.y = 0;
             dest.alpha = dest.scaleX = dest.scaleY = 1;
             addChild(dest);
-            dest.onFullyShown();
+            dest.onShown();
         }
     }
 
-    public function finishScreen(screen: RoxScreen, resultCode: Int, resultData: Dynamic, animate: RoxAnimate) {
-        var item = stack.pop();
-        if (item.className != Type.getClassName(Type.getClass(screen)) || stack.length == 0) throw "Illegal stack state";
-        animate = animate != null ? animate : item.animate.getReverse();
-        var item = stack[stack.length - 1];
-        var dest = screens.get(item.className);
-        startAnimate(screen, dest, animate, true);
-        dest.onScreenResult(item.requestCode, resultCode, resultData);
+    public function finishScreen(screen: RoxScreen, ?toScreen: String, resultCode: Int, resultData: Dynamic, animate: RoxAnimate) {
+        var srcbmp = snap(screen);
+        var top: StackItem = null;
+        var topscreen: RoxScreen = null;
+        while (true) {
+            top = stack.pop();
+            if (top.className != Type.getClassName(Type.getClass(screen)) || stack.length == 0)
+                throw "Illegal stack state or bad target screen '" + toScreen + "'";
+            top = stack.first();
+            topscreen = screens.get(top.className);
+            switchScreen(screen, topscreen, true);
+            screen = topscreen;
+            if (toScreen == null || top.className == toScreen) break;
+        }
+        animate = animate != null ? animate : top.animate.getReverse();
+        if (animate.type != RoxAnimate.NONE) startAnimate(srcbmp, snap(topscreen), animate);
+        topscreen.onScreenResult(top.requestCode, resultCode, resultData);
     }
 
-    private function startAnimate(src: RoxScreen, dest: RoxScreen, anim: RoxAnimate, finish: Bool) {
+    private inline function snap(s: RoxScreen) : Bitmap {
+        var bmd = new BitmapData(Std.int(s.screenWidth), Std.int(s.screenHeight));
+        bmd.draw(s);
+        return new Bitmap(bmd);
+    }
+
+    private function startAnimate(src: Bitmap, dest: Bitmap, anim: RoxAnimate) {
+        var sw = RoxApp.screenWidth, sh = RoxApp.screenHeight;
+        addChild(src);
         addChild(dest);
-        var srcsp = new Sprite(), destsp = new Sprite();
-        var srcbmd = new BitmapData(Std.int(src.screenWidth), Std.int(src.screenHeight));
-        var destbmd = new BitmapData(srcbmd.width, srcbmd.height);
-        srcbmd.draw(src);
-        destbmd.draw(dest);
-        srcsp.addChild(new Bitmap(srcbmd));
-        destsp.addChild(new Bitmap(destbmd));
-        addChild(srcsp);
-        addChild(destsp);
-//        trace("startAnim:"+anim);
         switch (anim.type) {
             case RoxAnimate.SLIDE:
                 switch (cast(anim.arg, String)) {
                     case "up":
-                        destsp.y = dest.screenHeight;
+                        dest.y = sh;
                     case "right":
-                        destsp.x = -dest.screenWidth;
+                        dest.x = -sw;
                     case "down":
-                        destsp.y = -dest.screenHeight;
+                        dest.y = -sh;
                     case "left":
-                        destsp.x = dest.screenWidth;
+                        dest.x = sw;
                 }
-//                trace("dest:" + Type.getClassName(Type.getClass(dest))+",xy=" + dest.x +","+ dest.y+",sc="+dest.scaleX+",alpha="+dest.alpha);
-                Actuate.tween(srcsp, anim.interval, { x: -destsp.x, y: -destsp.y });
-                Actuate.tween(destsp, anim.interval, { x: 0, y: 0 }).onComplete(animDone, [ src, dest, srcsp, destsp, finish ]);
+                Actuate.tween(src, anim.interval, { x: -dest.x, y: -dest.y });
+                Actuate.tween(dest, anim.interval, { x: 0, y: 0 }).onComplete(animDone, [ src, dest ]);
             case RoxAnimate.ZOOM_IN: // popup
                 var r: Rectangle = cast(anim.arg);
-                destsp.scaleX = destsp.scaleY = r.width / dest.screenWidth;
-                destsp.x = r.x;
-                destsp.y = r.y;
-//                trace("sc=" + r.width / RoxApp.screenWidth + ",x=" + r.x + ",y=" + r.y);
-                destsp.alpha = 0;
-//                src.visible = false;
-                Actuate.tween(destsp, anim.interval, { x: 0, y: 0, scaleX: 1, scaleY: 1, alpha: 1 })
-                        .onComplete(animDone, [ src, dest, srcsp, destsp, finish ]);
+                dest.scaleX = dest.scaleY = r.width / sw;
+                dest.x = r.x;
+                dest.y = r.y;
+                dest.alpha = 0;
+                Actuate.tween(dest, anim.interval, { x: 0, y: 0, scaleX: 1, scaleY: 1, alpha: 1 })
+                        .onComplete(animDone, [ src, dest ]);
             case RoxAnimate.ZOOM_OUT: // shrink
-                this.swapChildrenAt(0, 1); // make sure srcsp is on top
+                this.swapChildrenAt(0, 1); // make sure src is on top
                 var r: Rectangle = cast(anim.arg);
-                var scale = r.width / dest.screenWidth;
-                Actuate.tween(srcsp, anim.interval, { x: r.x, y: r.y, scaleX: scale, scaleY: scale, alpha: 0.01 })
-                        .onComplete(animDone, [ src, dest, srcsp, destsp, finish ]);
+                var scale = r.width / sw;
+                Actuate.tween(src, anim.interval, { x: r.x, y: r.y, scaleX: scale, scaleY: scale, alpha: 0.01 })
+                        .onComplete(animDone, [ src, dest ]);
 
         }
     }
 
-    private inline function animDone(src: RoxScreen, dest: RoxScreen, srcsp: Sprite, destsp: Sprite, finish: Bool) {
-        cast(dest, RoxScreen).onFullyShown();
-        var srcScreen = cast(src, RoxScreen);
-        removeChild(srcScreen);
-        srcScreen.onHidden();
-        if (finish && srcScreen.disposeAtFinish) {
-            var classname = Type.getClassName(Type.getClass(srcScreen));
+    private inline function animDone(src: Bitmap, dest: Bitmap) {
+        removeChild(src);
+        removeChild(dest);
+    }
+
+    private inline function switchScreen(src: RoxScreen, dest: RoxScreen, finish: Bool) {
+        removeChild(src);
+        src.onHidden();
+        if (finish && src.disposeAtFinish) {
+            var classname = Type.getClassName(Type.getClass(src));
             screens.remove(classname);
             ImageUtil.disposeGroup(classname);
+            src.onDestroy();
         }
-        removeChild(cast(srcsp));
-        removeChild(cast(destsp));
-//        trace("dest:" + Type.getClassName(Type.getClass(dest))+",xy=" + dest.x +","+ dest.y+",sc="+dest.scaleX+",alpha="+dest.alpha);
+        addChild(dest);
+        dest.onShown();
     }
 
 }

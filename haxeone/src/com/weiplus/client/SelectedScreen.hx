@@ -1,5 +1,6 @@
 package com.weiplus.client;
 
+import com.roxstudio.haxe.ui.RoxScreen;
 import com.eclecticdesignstudio.motion.Actuate;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
@@ -32,7 +33,7 @@ import com.weiplus.apps.swappuzzle.App;
 using com.roxstudio.haxe.ui.UiUtil;
 using com.roxstudio.haxe.game.GfxUtil;
 
-class HomeScreen extends BaseScreen {
+class SelectedScreen extends BaseScreen {
 
     private static inline var SPACING_RATIO = 1 / 40;
 
@@ -48,8 +49,8 @@ class HomeScreen extends BaseScreen {
     var animating: Bool = false;
 
     override public function onCreate() {
-        title = UiUtil.bitmap("res/icon_logo.png");
-        hasBack = false;
+        title = new Sprite();
+        title.addChild(UiUtil.staticText("精选内容", 0xFF0000, 36));
         super.onCreate();
         btnCol = btnSingleCol = UiUtil.button("res/icon_single_column.png", null, "res/btn_common.9.png", onButton);
         addTitleButton(btnCol, UiUtil.RIGHT);
@@ -80,7 +81,7 @@ class HomeScreen extends BaseScreen {
         var bmd = ImageUtil.getBitmapData("res/bg_main_bottom.png");
         var npdata = new RoxNinePatchData(new Rectangle(0, 0, bmd.width, bmd.height), bmd);
         var btnpanel = new RoxFlowPane(null, null, UiUtil.LEFT | UiUtil.BOTTOM, btns,
-                new RoxNinePatch(npdata), UiUtil.BOTTOM, [ 2 ]);
+        new RoxNinePatch(npdata), UiUtil.BOTTOM, [ 2 ]);
         sp.addChild(btnpanel.rox_scale(d2rScale).rox_move(0, height));
 //        trace("btnpanel="+btnpanel.x+","+btnpanel.y+","+btnpanel.width+","+btnpanel.height);
         viewh = height - 95 * d2rScale;
@@ -240,30 +241,30 @@ class HomeScreen extends BaseScreen {
                 addTitleButton(btnCol = btnSingleCol, UiUtil.RIGHT);
                 update(2);
             case "icon_home":
-//                startScreen(Type.getClassName(com.weiplus.client.TestGesture), new RoxAnimate(RoxAnimate.ZOOM_IN, new Rectangle(80, 80, 200, 300)));
+                finish(Type.getClassName(HomeScreen), RoxScreen.CANCELED);
             case "icon_selected":
-                startScreen(Type.getClassName(SelectedScreen));
+
             case "icon_maker":
-                startScreen(Type.getClassName(MakersScreen));
+                startScreen(Type.getClassName(MakersScreen), true);
             case "icon_account":
-                startScreen(Type.getClassName(UserScreen));
+                startScreen(Type.getClassName(UserScreen), true);
         }
     }
 
     private static var statuses = [
-    [ "趣图集锦", "res/data/head5.png", "这人民币折纸无敌了！", "res/data/17.jpg", "slidepuzzle", "120" ],
-    [ "王磊", "res/data/head2.png", "这网站的有些家伙，只能用这幅图形容了", "res/data/14.jpg", "image", "" ],
+    [ "姚卫峰", "res/data/head3.png", "我心目中的巨人，拼出来你就知道是谁了", "res/data/3.jpg", "swappuzzle", "110" ],
+    [ "Christina", "res/data/head1.png", "This's my friend, is she beautiful?", "res/data/8.jpg", "jigsaw", "110" ],
     [ "中兴手机", "res/data/head6.png", "你能认出几个美国超人？", "res/data/16.jpg", "swappuzzle", "110" ],
-    [ "趣图集锦", "res/data/head5.png", "鸡蛋中的异类", "res/data/15.jpg", "image", "" ],
-    [ "王磊", "res/data/head2.png", "haXe才是移动平台的王者", "res/data/4.jpg", "jigsaw", "120" ],
-    [ "伏英娜", "res/data/head1.png", "晴朗的天空", "res/data/9.jpg", "jigsaw", "120" ],
-    [ "徐野", "res/data/head5.png", "转个搞笑图，等短信的表情", "res/data/7.jpg", "image", "" ],
     [ "超级红裤衩", "res/data/head3.png", "兔子的征途是星辰大海！", "res/data/11.jpg", "slidepuzzle", "140" ],
     [ "周鸿祎", "res/data/head4.png", "强敌环伺的360", "res/data/1.jpg", "jigsaw", "130" ],
+    [ "趣图集锦", "res/data/head5.png", "鸡蛋中的异类", "res/data/15.jpg", "image", "" ],
+    [ "伏英娜", "res/data/head1.png", "晴朗的天空", "res/data/9.jpg", "jigsaw", "120" ],
+    [ "徐野", "res/data/head5.png", "转个搞笑图，等短信的表情", "res/data/7.jpg", "image", "" ],
+    [ "趣图集锦", "res/data/head5.png", "这人民币折纸无敌了！", "res/data/17.jpg", "slidepuzzle", "120" ],
+    [ "王磊", "res/data/head2.png", "这网站的有些家伙，只能用这幅图形容了", "res/data/14.jpg", "image", "" ],
     [ "尤成", "res/data/head6.png", "猜猜谁是真正的凶手？", "res/data/12.jpg", "image", "" ],
-    [ "Christina", "res/data/head1.png", "This's my friend, is she beautiful?", "res/data/8.jpg", "jigsaw", "110" ],
     [ "郝晓伟", "res/data/head7.png", "斑马的由来", "res/data/10.jpg", "image", "" ],
-    [ "姚卫峰", "res/data/head3.png", "我心目中的巨人，拼出来你就知道是谁了", "res/data/3.jpg", "swappuzzle", "110" ]
+    [ "王磊", "res/data/head2.png", "haXe才是移动平台的王者", "res/data/4.jpg", "jigsaw", "120" ]
     ];
 
 }
