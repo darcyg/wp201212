@@ -38,6 +38,7 @@ class ResKeeper {
         if (bundle == null) return null;
         var ret: Array<Dynamic> = [];
         for (id in bundle) ret.push(map.get(id));
+        return ret;
     }
 
     public static function disposeBundle(bundleId: String) {
