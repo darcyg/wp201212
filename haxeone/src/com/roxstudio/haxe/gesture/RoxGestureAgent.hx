@@ -65,7 +65,6 @@ class RoxGestureAgent {
     private var longPressTimer: GenericActuator;
     private var tweener: GenericActuator;
     private var overlay: Sprite; // used in capture mode, to capture events outside the owner
-    private var touchIds: IntHash<Int>;
     /**
      * READY -> begin:BEGIN -> end:tap
      * READY -> begin:BEGIN -> move:MOVE [-> MOVE]: pan
@@ -85,7 +84,6 @@ class RoxGestureAgent {
         for (type in listenEvents) owner.addEventListener(type, handler);
         if (mode == GESTURE_CAPTURE) Lib.current.stage.addEventListener(Event.RESIZE, function(e) { overlay = null; } );
         touchList = new List<TouchPoint>();
-        touchIds = new IntHash<Int>();
         setReady();
     }
 
@@ -181,31 +179,28 @@ class RoxGestureAgent {
     }
 
     private inline function onTouch(e: Dynamic) {
-        var tid: Int = e.touchPointID, id: Null<Int>;
-//        trace("onTouch:e=" + e +",touchId="+tid);
-        if ((id = touchIds.get(tid)) == null) {
-            id = touchIds.count();
-            touchIds.set(tid, id);
+        var id: Int = e.touchPointID;
+//        trace("onTouch:e=" + e +",touchId="+id);
+        var prim = touch0 == null || touch0.tid == id;
+        if (prim || (touch1 != null && touch1.tid == id) || (touch0 != null && touch1 == null && touch0.tid != id)) {
+            if (handleTouch(typeMap.get(e.type), e, prim, id)) e.rox_stopPropagation();
         }
-        if (id <= 1) {
-            if (handleTouch(typeMap.get(e.type), e, id == 0)) e.rox_stopPropagation();
-        }
-        if (e.type == TouchEvent.TOUCH_END) {
-            touchIds.remove(tid);
-        }
+//        if (id <= 1) {
+//            if (handleTouch(typeMap.get(e.type), e, id == 0)) e.rox_stopPropagation();
+//        }
     }
 
     private inline function onMouse(e: Dynamic) {
 //        trace("onMouse:e=" + e);
         var t: String = e.type;
         if (t == MouseEvent.MOUSE_DOWN || t == MouseEvent.MOUSE_UP || e.buttonDown) {
-            if (handleTouch(typeMap.get(t), e, true)) e.rox_stopPropagation();
+            if (handleTouch(typeMap.get(t), e, true, 0)) e.rox_stopPropagation();
         }
     }
 
-    private function handleTouch(type: String, e: Dynamic, prim: Bool) : Bool {
+    private function handleTouch(type: String, e: Dynamic, prim: Bool, touchId: Int) : Bool {
 //        trace("type=" + type + ",e=" + e);
-        var pt = new TouchPoint(owner, e);
+        var pt = new TouchPoint(owner, e, touchId);
         var tp = prim ? touch0 : touch1;
         if (type == RoxGestureEvent.TOUCH_MOVE && tp != null && tp.sx == pt.sx && tp.sy == pt.sy) return false; // NO MOVE -> skip
         var handled = true;
@@ -356,6 +351,7 @@ class RoxGestureAgent {
 }
 
 private class TouchPoint {
+    public var tid: Int;
     public var lx: Float;
     public var ly: Float;
     public var sx: Float;
@@ -363,7 +359,8 @@ private class TouchPoint {
     public var lpt: Point;
     public var spt: Point;
     public var time: Float;
-    public function new(src: InteractiveObject, e: Dynamic) {
+    public function new(src: InteractiveObject, e: Dynamic, touchId: Int) {
+        tid = touchId;
         sx = e.stageX;
         sy = e.stageY;
         spt = new Point(sx, sy);
