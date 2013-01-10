@@ -10,6 +10,7 @@ import nme.geom.Rectangle;
 import nme.utils.ByteArray;
 import nme.Vector;
 
+using com.roxstudio.haxe.game.GfxUtil;
 using com.roxstudio.haxe.ui.UiUtil;
 
 /**
@@ -32,6 +33,7 @@ class Tile extends Sprite {
     private var bmd: BitmapData;
     private var image: BitmapData;
     private var shape: BitmapData;
+    public var hitarea: Sprite;
 
     public function new(inJigsaw: App, inColIndex: Int, inRowIndex: Int, inSides: Array<Int>, inAngle: Int) {
         super();
@@ -49,6 +51,13 @@ class Tile extends Sprite {
         var ml = Std.int(maxLen);
         bmd = new BitmapData(ml, ml);
         addChild(new Bitmap(bmd).rox_smooth().rox_move(-maxLen / 2, -maxLen / 2));
+
+        hitarea = new Sprite();
+        hitarea.graphics.rox_fillRect(0x1FFFFFF, 0, 0, sideLen, sideLen);
+        addChild(hitarea.rox_move(-sideLen / 2, -sideLen / 2));
+        hitarea.mouseEnabled = true;
+        this.mouseEnabled = false;
+
         update();
     }
 

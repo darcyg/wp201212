@@ -12,6 +12,7 @@
   <classpath name="src" />
   
   <haxedef name="fdb" if="target_flash" />
+  <haxedef name="network-sandbox" if="target_flash" />
   <haxedef name="js_can_implement_array_access" if="html5" />
   <!--window borderless="true" /-->
 
@@ -24,10 +25,10 @@
   <assets path="res" include="*" exclude="icon.svg" />
 
   <include path="../android/haxe_include.nmml" if="android"/>
-  <template path="src/com/weiplus/client/HaxeStub.java" if="android" />
-  <template path="src/com/weiplus/client/MainActivity.java" if="android" />
+  <template path="javasrc/com/weiplus/client/HaxeStub.java" if="android" />
+  <template path="javasrc/com/weiplus/client/MainActivity.java" if="android" />
   <!--template path="src/org/haxe/nme/GameActivity.java" if="android" /-->
-  <template path="src/org/haxe/nme/MainView.java" if="android" />
+  <template path="javasrc/org/haxe/nme/MainView.java" if="android" />
   <template path="AndroidManifest.xml" if="android" />
 
   <ndll name="std" />

@@ -1,5 +1,7 @@
 package com.weiplus.client;
 
+import com.roxstudio.haxe.game.ResKeeper;
+import com.roxstudio.haxe.ui.UiUtil;
 import nme.display.BlendMode;
 import com.roxstudio.haxe.game.GameUtil;
 import nme.display.BlendMode;
@@ -15,76 +17,58 @@ import com.eclecticdesignstudio.motion.Actuate;
 import nme.geom.Matrix;
 import nme.display.DisplayObject;
 import nme.display.Bitmap;
-import com.roxstudio.haxe.events.RoxGestureEvent;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import nme.display.Sprite;
 
+using com.roxstudio.haxe.game.GfxUtil;
 using com.roxstudio.haxe.ui.UiUtil;
 
-class TestGesture extends RoxScreen {
+class TestGesture extends BaseScreen {
 
-    var contentOffset = 0.0;
-
-    public function new() {
-        super();
-        var container = new Sprite();
-        var titlebar = new Bitmap(GameUtil.loadBitmapData("res/titlebar.png")).rox_smooth();
-        container.addChild(titlebar);
-        var scale = screenWidth / titlebar.bitmapData.width;
-        container.rox_scale(scale);
-
-        var btnBack = new Sprite().rox_button("res/btnBack.png", onClick);
-        btnBack.rox_move(titlebar.width - btnBack.width - 14, 14);
-        container.addChild(btnBack);
-        contentOffset = titlebar.bitmapData.height * scale;
-
-//        graphics.beginBitmapFill(GameUtil.loadBitmapData("res/shape.png"), new Matrix(0.5, 0, 0, 0.5, 0, 0));//0xFFBBBB);
-        graphics.beginFill(0xFFBBBB);
-        graphics.drawRect(0, 0, screenWidth, screenHeight);
-        graphics.endFill();
+    override public function createContent(height: Float) : Sprite {
+        var sp = new Sprite();
 
         var big = new Sprite();
-        var bmp = new Bitmap(GameUtil.loadBitmapData("res/content1.jpg"));
+
+        var bmp = new Bitmap(ResKeeper.getAssetImage("res/data/8.jpg"));
         bmp.smoothing = true;
         bmp.x = -bmp.width / 2;
         bmp.y = -bmp.height / 2;
         big.addChild(bmp);
+//        big.graphics.rox_fillRect(0xFFFFFFFF, -screenWidth / 2, -screenHeight / 2, screenWidth, screenHeight);
         big.name = "big";
         big.x = screenWidth / 2;
         big.y = screenHeight / 2;
         var agent = new RoxGestureAgent(big, RoxGestureAgent.GESTURE);
-        big.addEventListener(RoxGestureEvent.TOUCH_BEGIN, onTouch);
+//        big.addEventListener(RoxGestureEvent.TOUCH_BEGIN, onTouch);
         big.addEventListener(RoxGestureEvent.GESTURE_TAP, function(e) { trace(e); });
         big.rotation = 15;
-        big.addEventListener(RoxGestureEvent.GESTURE_PAN, agent.getHandler());
+        big.addEventListener(RoxGestureEvent.GESTURE_PAN, agent.getHandler(RoxGestureAgent.PAN_XY));
         big.addEventListener(RoxGestureEvent.GESTURE_SWIPE, agent.getHandler());
         big.addEventListener(RoxGestureEvent.GESTURE_PINCH, agent.getHandler());
         big.addEventListener(RoxGestureEvent.GESTURE_ROTATION, agent.getHandler());
 //        big.blendMode = BlendMode.OVERLAY;
-        addChild(big);
+        sp.addChild(big);
         //big.scaleX = big.scaleY = 1.5;
 
         var small = new Sprite();
         small.name = "small";
-        bmp = new Bitmap(GameUtil.loadBitmapData("res/content2.jpg"));
+        var bmp = new Bitmap(ResKeeper.getAssetImage("res/data/14.jpg"));
         bmp.smoothing = true;
         bmp.x = -bmp.width / 2;
         bmp.y = -bmp.height / 2;
         small.addChild(bmp);
         small.x = 0;
         small.y = 0;
-        agent = new RoxGestureAgent(small, RoxGestureAgent.GESTURE);
+        agent = new RoxGestureAgent(small, RoxGestureAgent.GESTURE_CAPTURE);
         small.addEventListener(RoxGestureEvent.GESTURE_TAP, onTouch);
-        small.addEventListener(RoxGestureEvent.GESTURE_PAN, agent.getHandler(2));
+        small.addEventListener(RoxGestureEvent.GESTURE_PAN, agent.getHandler(RoxGestureAgent.PAN_X));
         small.addEventListener(RoxGestureEvent.GESTURE_PINCH, agent.getHandler());
         small.addEventListener(RoxGestureEvent.GESTURE_LONG_PRESS, onTouch);
         big.addChild(small);
 
-        var shape = new Sprite().rox_button("res/shape.png", onClick).rox_move(-400, 200);
-        shape.blendMode = BlendMode.HARDLIGHT;
-        small.addChild(shape);
-
-        addChild(container);
+        return sp;
     }
 
     private function onClick(e) {

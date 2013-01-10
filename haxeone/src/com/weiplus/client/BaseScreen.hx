@@ -2,8 +2,8 @@ package com.weiplus.client;
 
 import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.ui.RoxFlowPane;
-import com.roxstudio.haxe.game.ImageUtil;
-import com.roxstudio.haxe.game.ImageUtil;
+import com.roxstudio.haxe.game.ResKeeper;
+import com.roxstudio.haxe.game.ResKeeper;
 import com.roxstudio.haxe.ui.RoxScreen;
 import nme.geom.Rectangle;
 import nme.display.Sprite;
@@ -50,7 +50,7 @@ class BaseScreen extends RoxScreen {
         content = createContent((designHeight - TOP_HEIGHT) * d2rScale);
         content.rox_move(0, TOP_HEIGHT * d2rScale);
         addChild(content);
-        graphics.beginBitmapFill(ImageUtil.getBitmapData("res/bg_main.jpg"));
+        graphics.beginBitmapFill(ResKeeper.getAssetImage("res/bg_main.jpg"));
         graphics.drawRect(0, 0, screenWidth, screenHeight);
         graphics.endFill();
         addChild(titleBar);

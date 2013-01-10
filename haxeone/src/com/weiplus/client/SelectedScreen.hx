@@ -4,16 +4,16 @@ import com.roxstudio.haxe.ui.RoxScreen;
 import com.eclecticdesignstudio.motion.Actuate;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
-import com.roxstudio.haxe.game.ImageUtil;
+import com.roxstudio.haxe.game.ResKeeper;
 import com.roxstudio.haxe.ui.RoxNinePatchData;
 import com.roxstudio.haxe.ui.RoxNinePatch;
 import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.ui.UiUtil;
-import com.roxstudio.haxe.events.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
 import com.roxstudio.haxe.game.GameUtil;
 import com.roxstudio.haxe.ui.RoxAnimate;
 import com.roxstudio.haxe.ui.RoxApp;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.weiplus.client.model.User;
 import com.weiplus.client.model.AppData;
@@ -78,7 +78,7 @@ class SelectedScreen extends BaseScreen {
             button.name = b;
             btns.push(button);
         }
-        var bmd = ImageUtil.getBitmapData("res/bg_main_bottom.png");
+        var bmd = ResKeeper.getAssetImage("res/bg_main_bottom.png");
         var npdata = new RoxNinePatchData(new Rectangle(0, 0, bmd.width, bmd.height), bmd);
         var btnpanel = new RoxFlowPane(null, null, UiUtil.LEFT | UiUtil.BOTTOM, btns,
         new RoxNinePatch(npdata), UiUtil.BOTTOM, [ 2 ]);
@@ -126,9 +126,8 @@ class SelectedScreen extends BaseScreen {
                 status.appData.image = ss[3];
                 status.appData.type = ss[4];
                 status.appData.label = ss[5];
-                var bmd = ImageUtil.loadBitmapData(ss[3]);
-                status.appData.width = bmd.width;
-                status.appData.height = bmd.height;
+                status.appData.width = Std.parseInt(ss[6]);
+                status.appData.height = Std.parseInt(ss[7]);
                 status.text = ss[2];
                 status.createdAt = Date.fromTime(Date.now().getTime() - Std.random(3600));
                 var postit = new Postit(status, postitw, numCol == 1);
@@ -140,7 +139,7 @@ class SelectedScreen extends BaseScreen {
         for (i in 0...postits.length) {
             var postit = postits[i];
             if (resetwidth) postit.setWidth(postitw, numCol == 1);
-            var shadow = new RoxNinePatch(ImageUtil.getNinePatchData("res/shadow6.9.png"));
+            var shadow = UiUtil.ninePatch("res/shadow6.9.png");
             shadow.setDimension(postitw + 3, postit.height + 6);
 
             var minh: Float = GameUtil.IMAX, colidx = 0;
@@ -183,7 +182,7 @@ class SelectedScreen extends BaseScreen {
         var postit: Postit = cast(e.target);
         var status = postit.status;
         var classname = "com.weiplus.apps." + status.appData.type + ".App";
-        startScreen(classname, { image: postit.image.bitmapData, sideLen: Std.parseInt(status.appData.label) });
+        startScreen(classname, { image: postit.image.data, sideLen: Std.parseInt(status.appData.label) });
     }
 
     private inline function animDone(sp: DisplayObject) {
@@ -210,9 +209,11 @@ class SelectedScreen extends BaseScreen {
                     }
                 }
             case RoxGestureEvent.GESTURE_PAN:
-                main.y = UiUtil.rangeValue(main.y + e.extra.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
+                var pt = RoxGestureAgent.localOffset(main, cast(e.extra));
+                main.y = UiUtil.rangeValue(main.y + pt.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
             case RoxGestureEvent.GESTURE_SWIPE:
-                var desty = UiUtil.rangeValue(main.y + e.extra.y * 2.0, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
+                var pt = RoxGestureAgent.localOffset(main, cast(new Point(e.extra.x * 2.0, e.extra.y * 2.0)));
+                var desty = UiUtil.rangeValue(main.y + pt.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
                 agent.startTween(main, 2.0, { y: desty });
             case RoxGestureEvent.GESTURE_PINCH:
 //                trace("pinch:numCol=" + numCol + ",extra=" + e.extra);
@@ -245,26 +246,26 @@ class SelectedScreen extends BaseScreen {
             case "icon_selected":
 
             case "icon_maker":
-                startScreen(Type.getClassName(MakersScreen), true);
+                startScreen(Type.getClassName(MakerList), true);
             case "icon_account":
                 startScreen(Type.getClassName(UserScreen), true);
         }
     }
 
     private static var statuses = [
-    [ "姚卫峰", "res/data/head3.png", "我心目中的巨人，拼出来你就知道是谁了", "res/data/3.jpg", "swappuzzle", "110" ],
-    [ "Christina", "res/data/head1.png", "This's my friend, is she beautiful?", "res/data/8.jpg", "jigsaw", "110" ],
-    [ "中兴手机", "res/data/head6.png", "你能认出几个美国超人？", "res/data/16.jpg", "swappuzzle", "110" ],
-    [ "超级红裤衩", "res/data/head3.png", "兔子的征途是星辰大海！", "res/data/11.jpg", "slidepuzzle", "140" ],
-    [ "周鸿祎", "res/data/head4.png", "强敌环伺的360", "res/data/1.jpg", "jigsaw", "130" ],
-    [ "趣图集锦", "res/data/head5.png", "鸡蛋中的异类", "res/data/15.jpg", "image", "" ],
-    [ "伏英娜", "res/data/head1.png", "晴朗的天空", "res/data/9.jpg", "jigsaw", "120" ],
-    [ "徐野", "res/data/head5.png", "转个搞笑图，等短信的表情", "res/data/7.jpg", "image", "" ],
-    [ "趣图集锦", "res/data/head5.png", "这人民币折纸无敌了！", "res/data/17.jpg", "slidepuzzle", "120" ],
-    [ "王磊", "res/data/head2.png", "这网站的有些家伙，只能用这幅图形容了", "res/data/14.jpg", "image", "" ],
-    [ "尤成", "res/data/head6.png", "猜猜谁是真正的凶手？", "res/data/12.jpg", "image", "" ],
-    [ "郝晓伟", "res/data/head7.png", "斑马的由来", "res/data/10.jpg", "image", "" ],
-    [ "王磊", "res/data/head2.png", "haXe才是移动平台的王者", "res/data/4.jpg", "jigsaw", "120" ]
+    [ "中兴手机", "http://rox.local/res/data/head6.png", "你能认出几个美国超人？", "http://rox.local/res/data/16.jpg", "swappuzzle", "110", "448", "387" ],
+    [ "超级红裤衩", "http://rox.local/res/data/head3.png", "兔子的征途是星辰大海！", "http://rox.local/res/data/11.jpg", "slidepuzzle", "140", "445", "617" ],
+    [ "趣图集锦", "http://rox.local/res/data/head5.png", "这人民币折纸无敌了！", "http://rox.local/res/data/17.jpg", "slidepuzzle", "120", "389", "409" ],
+    [ "王磊", "http://rox.local/res/data/head2.png", "这网站的有些家伙，只能用这幅图形容了", "http://rox.local/res/data/14.jpg", "image", "", "264", "163" ],
+    [ "Christina", "http://rox.local/res/data/head1.png", "This's my friend, is she beautiful?", "http://rox.local/res/data/8.jpg", "jigsaw", "110", "580", "580" ],
+    [ "郝晓伟", "http://rox.local/res/data/head7.png", "斑马的由来", "http://rox.local/res/data/10.jpg", "image", "", "440", "1980" ],
+    [ "趣图集锦", "http://rox.local/res/data/head5.png", "鸡蛋中的异类", "http://rox.local/res/data/15.jpg", "image", "", "349", "342" ],
+    [ "姚卫峰", "http://rox.local/res/data/head3.png", "我心目中的巨人，拼出来你就知道是谁了", "http://rox.local/res/data/3.jpg", "swappuzzle", "110", "350", "443" ],
+    [ "王磊", "http://rox.local/res/data/head2.png", "haXe才是移动平台的王者", "http://rox.local/res/data/4.jpg", "jigsaw", "120", "600", "375" ],
+    [ "伏英娜", "http://rox.local/res/data/head1.png", "晴朗的天空", "http://rox.local/res/data/9.jpg", "jigsaw", "120", "640", "480" ],
+    [ "徐野", "http://rox.local/res/data/head5.png", "转个搞笑图，等短信的表情", "http://rox.local/res/data/7.jpg", "image", "", "338", "720" ],
+    [ "周鸿祎", "http://rox.local/res/data/head4.png", "强敌环伺的360", "http://rox.local/res/data/1.jpg", "jigsaw", "130", "770", "556" ],
+    [ "尤成", "http://rox.local/res/data/head6.png", "猜猜谁是真正的凶手？", "http://rox.local/res/data/12.jpg", "image", "", "600", "673" ]
     ];
 
 }

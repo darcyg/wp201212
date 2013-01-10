@@ -1,11 +1,12 @@
 package com.weiplus.client;
 
+import com.roxstudio.haxe.ui.RoxPreloader;
 import com.weiplus.client.model.User;
 import com.weiplus.client.model.AppData;
 import com.weiplus.client.model.Status;
 import nme.geom.Point;
-import com.roxstudio.haxe.events.RoxGestureEvent;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.roxstudio.haxe.ui.UiUtil;
@@ -22,7 +23,7 @@ import com.roxstudio.haxe.ui.UiUtil;
 import nme.text.TextField;
 import nme.text.TextFormat;
 import com.roxstudio.haxe.ui.RoxFlowPane;
-import com.roxstudio.haxe.game.ImageUtil;
+import com.roxstudio.haxe.game.ResKeeper;
 import nme.display.BitmapData;
 import nme.display.Bitmap;
 import nme.geom.Matrix;
@@ -121,35 +122,40 @@ class TestScreen extends BaseScreen {
 //        var remote = new RoxAsyncBitmap("http://img.my.csdn.net/uploads/201212/19/1355883342_4474.png", 500, 500,
 //                UiUtil.rox_bitmap("res/clock.png"), UiUtil.rox_bitmap("res/bg_play_tip.png"));
 //        content.addChild(remote.rox_move(20, 200));
-        var icon = UiUtil.bitmap("res/icon_bubble.png");
-        var text = UiUtil.staticText("我这里就是要测试一下文字是否能够平滑的放缩abc123ABC!", 0xFF0000, 36, true, 250);
-        var textscale = new RoxFlowPane([ icon, text ], UiUtil.buttonBackground(), UiUtil.TOP);
-        var ag = new RoxGestureAgent(textscale);
-        textscale.addEventListener(RoxGestureEvent.GESTURE_PINCH, ag.getHandler());
-        textscale.addEventListener(RoxGestureEvent.GESTURE_PAN, function(e) {
-            textscale.rox_scale(textscale.scaleX + (e.extra.x > 0 ? 0.1 : -0.1));
-
-        });
-        content.addChild(textscale.rox_move(50, 200));
-
-        var status = new Status();
-        status.text = "【苹果电视要来了?】";
-        status.createdAt = new Date(2012, 11, 29, 17, 49, 11);
-        var appdata: AppData = status.appData = new AppData();
-        appdata.label = "记录我的心情点滴";
-        appdata.type = "jigsaw";
-        appdata.image = "res/content1pot.jpg";
-        appdata.width = appdata.height = 512;
-        var user: User = status.user = new User();
-        user.name = "李开复";
-        user.profileImage = "res/avatar1.png";
-        var postit = new Postit(status, 480, false);
-
-        var shadow = new RoxNinePatch(ImageUtil.getNinePatchData("res/shadow6.9.png"));
-        shadow.setDimension(postit.width + 3, postit.height + 6);
-        content.addChild(shadow.rox_move(10, 11));
-        content.addChild(postit.rox_move(12, 12));
-
+//        var icon = UiUtil.bitmap("res/icon_bubble.png");
+//        var text = UiUtil.staticText("我这里就是要测试一下文字是否能够平滑的放缩abc123ABC!", 0xFF0000, 36, true, 250);
+//        var textscale = new RoxFlowPane([ icon, text ], UiUtil.buttonBackground(), UiUtil.TOP);
+//        var ag = new RoxGestureAgent(textscale);
+//        textscale.addEventListener(RoxGestureEvent.GESTURE_PINCH, ag.getHandler());
+//        textscale.addEventListener(RoxGestureEvent.GESTURE_PAN, function(e) {
+//            textscale.rox_scale(textscale.scaleX + (e.extra.x > 0 ? 0.1 : -0.1));
+//
+//        });
+//        content.addChild(textscale.rox_move(50, 200));
+//
+//        var status = new Status();
+//        status.text = "【苹果电视要来了?】";
+//        status.createdAt = new Date(2012, 11, 29, 17, 49, 11);
+//        var appdata: AppData = status.appData = new AppData();
+//        appdata.label = "记录我的心情点滴";
+//        appdata.type = "jigsaw";
+//        appdata.image = "res/content1pot.jpg";
+//        appdata.width = appdata.height = 512;
+//        var user: User = status.user = new User();
+//        user.name = "李开复";
+//        user.profileImage = "res/avatar1.png";
+//        var postit = new Postit(status, 480, false);
+//
+//        var shadow = UiUtil.ninePatch("res/shadow6.9.png");
+//        shadow.setDimension(postit.width + 3, postit.height + 6);
+//        content.addChild(shadow.rox_move(10, 11));
+//        content.addChild(postit.rox_move(12, 12));
+        var nn = [ 1, 3, 4, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17 ];
+        var assets = [ ];
+//        for (i in nn) assets.push("assets://res/data/" + i + ".jpg");
+//        for (i in nn) assets.push("file:///D:/work/ws_haxe/weiplus-github/haxeone/res/data/" + i + ".jpg");
+        for (i in nn) assets.push("http://rox.local/res/data/" + i + ".jpg");
+        var ldr = new RoxPreloader(assets);
         return content;
     }
 

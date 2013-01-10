@@ -1,8 +1,8 @@
 package com.weiplus.client;
 
-import com.roxstudio.haxe.events.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
 import com.roxstudio.haxe.ui.RoxApp;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import com.roxstudio.haxe.ui.RoxScreen;
 import nme.display.Sprite;
 import nme.geom.Rectangle;

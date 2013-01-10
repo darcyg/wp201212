@@ -5,9 +5,9 @@ import com.eclecticdesignstudio.motion.easing.Elastic;
 import com.eclecticdesignstudio.motion.Actuate;
 import com.roxstudio.haxe.ui.RoxScreen;
 import com.roxstudio.haxe.game.GameUtil;
-import com.roxstudio.haxe.game.ImageUtil;
-import com.roxstudio.haxe.events.RoxGestureEvent;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.game.ResKeeper;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import com.roxstudio.haxe.ui.RoxApp;
 import com.roxstudio.haxe.ui.RoxAnimate;
 import nme.display.BitmapData;
@@ -35,7 +35,7 @@ class App extends PlayScreen {
 
     override public function onNewRequest(data: Dynamic) {
         if (data == null) data = getTestData();
-        shape = ImageUtil.getBitmapData("res/shape184.png");
+        shape = ResKeeper.getAssetImage("res/shape184.png");
         image = data.image;
         sideLen = data.sideLen;
 
@@ -144,7 +144,7 @@ class App extends PlayScreen {
 
     static public function getTestData() : Dynamic {
         return {
-            image: ImageUtil.getBitmapData("res/content1.jpg"),
+            image: ResKeeper.getAssetImage("res/content1.jpg"),
             sideLen: 150 };
     }
 

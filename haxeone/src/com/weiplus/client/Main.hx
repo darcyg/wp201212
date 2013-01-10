@@ -15,6 +15,8 @@ import nme.Lib;
 //import com.weiplus.client.Postit;
 //import com.weiplus.client.PostitScreen;
 
+//import com.roxstudio.haxe.net.RoxURLLoader;
+
 class Main {
 
     public function new() {
@@ -23,9 +25,10 @@ class Main {
     static public function main() {
         RoxApp.init();
         var m = new RoxScreenManager();
-        m.startScreen(Type.getClassName(com.weiplus.client.HomeScreen));
+//        m.startScreen(Type.getClassName(com.weiplus.client.HomeScreen));
 //        m.startScreen(Type.getClassName(CameraScreen));
-//        m.startScreen(Type.getClassName(TestScreen));
+//        m.startScreen(Type.getClassName(TestGesture));
+        m.startScreen(Type.getClassName(TestScreen));
         RoxApp.stage.addChild(m);
 
         var fps = new FPS();

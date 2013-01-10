@@ -7,9 +7,9 @@ import com.eclecticdesignstudio.motion.easing.Elastic;
 import com.eclecticdesignstudio.motion.Actuate;
 import com.roxstudio.haxe.ui.RoxScreen;
 import com.roxstudio.haxe.game.GameUtil;
-import com.roxstudio.haxe.game.ImageUtil;
-import com.roxstudio.haxe.events.RoxGestureEvent;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.game.ResKeeper;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import com.roxstudio.haxe.ui.RoxApp;
 import com.roxstudio.haxe.ui.RoxAnimate;
 import nme.display.BitmapData;
@@ -35,7 +35,7 @@ class App extends PlayScreen {
 
     override public function onNewRequest(data: Dynamic) {
         if (data == null) data = getTestData();
-        shape = ImageUtil.getBitmapData("res/shape_new.png");
+        shape = ResKeeper.getAssetImage("res/shape_new.png");
         shapeSideLen = 184;
         image = data.image;
         sideLen = data.sideLen;
@@ -55,10 +55,10 @@ class App extends PlayScreen {
 
                 t.rox_move(sideLen / 2 +  Math.random() * (screenWidth - sideLen),
                         sideLen / 2 + Math.random() * (screenHeight - titleBar.height - sideLen));
-                var agent = new RoxGestureAgent(t, RoxGestureAgent.GESTURE);
+                var agent = new RoxGestureAgent(t.hitarea, RoxGestureAgent.GESTURE_CAPTURE);
                 agent.swipeTimeout = 0;
-                t.addEventListener(RoxGestureEvent.GESTURE_PAN, onTouch);
-                t.addEventListener(RoxGestureEvent.GESTURE_SWIPE, onTouch);
+                t.hitarea.addEventListener(RoxGestureEvent.GESTURE_PAN, onTouch);
+                t.hitarea.addEventListener(RoxGestureEvent.GESTURE_SWIPE, onTouch);
                 board.addChild(t);
                 var tg = new TileGroup();
                 tg.set(t.id, t);
@@ -82,7 +82,7 @@ class App extends PlayScreen {
     }
 
     private function onTouch(e: RoxGestureEvent) : Void {
-        var tile = cast(e.target, Tile);
+        var tile = cast(e.target.parent, Tile);
         if (e.type == RoxGestureEvent.GESTURE_PAN) {
             //trace(">>released<<=" + tile);
             moveGroup(tile, e.extra.x, e.extra.y);
@@ -103,7 +103,7 @@ class App extends PlayScreen {
                     if (tt.id == t.id - 0x10000) destx -= sideLen;
                     if (tt.id == t.id + 1) desty += sideLen;
                     if (tt.id == t.id - 1) desty -= sideLen;
-                    if (GameUtil.distanceFF(destx, desty, tt.x, tt.y) < sideLen * 0.1) { // close enough, do stick
+                    if (GameUtil.distanceFF(destx, desty, tt.x, tt.y) < sideLen * 0.16) { // close enough, do stick
                         moveGroup(tt, destx - tt.x, desty - tt.y);
                         for (i in group.keys()) {
                             mygroup.set(i, group.get(i));
@@ -135,8 +135,8 @@ class App extends PlayScreen {
 
     static public function getTestData() : Dynamic {
         return {
-            shape: ImageUtil.getBitmapData("res/shape.png"),
-            image: ImageUtil.getBitmapData("res/content1.jpg"),
+            shape: ResKeeper.getAssetImage("res/shape.png"),
+            image: ResKeeper.getAssetImage("res/content1.jpg"),
             shapeSideLen: 200,
             sideLen: 120 };
     }

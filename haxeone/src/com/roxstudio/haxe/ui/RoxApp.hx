@@ -22,7 +22,11 @@ class RoxApp {
         stage.scaleMode = StageScaleMode.NO_SCALE;
         screenWidth = stage.stageWidth;
         screenHeight = stage.stageHeight;
+#if flash
+//        haxe.Firebug.redirectTraces();
+#elseif cpp
         GbTracer.init("eng/u2g.dat");
+#end
     }
 
 }

@@ -17,7 +17,7 @@ import nme.display.Sprite;
 using com.roxstudio.haxe.game.GfxUtil;
 using com.roxstudio.haxe.ui.UiUtil;
 
-class MakersScreen extends BaseScreen {
+class MakerList extends BaseScreen {
     private static inline var BG_COLOR = 0xFF383838;
     private static inline var MARG_H = 30 / 640;
     private static inline var MARG_V = 18 / 640;

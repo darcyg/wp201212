@@ -6,16 +6,16 @@ import com.roxstudio.haxe.ui.RoxScreen;
 import com.eclecticdesignstudio.motion.Actuate;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
-import com.roxstudio.haxe.game.ImageUtil;
+import com.roxstudio.haxe.game.ResKeeper;
 import com.roxstudio.haxe.ui.RoxNinePatchData;
 import com.roxstudio.haxe.ui.RoxNinePatch;
 import com.roxstudio.haxe.ui.RoxFlowPane;
 import com.roxstudio.haxe.ui.UiUtil;
-import com.roxstudio.haxe.events.RoxGestureEvent;
+import com.roxstudio.haxe.gesture.RoxGestureEvent;
 import com.roxstudio.haxe.game.GameUtil;
 import com.roxstudio.haxe.ui.RoxAnimate;
 import com.roxstudio.haxe.ui.RoxApp;
-import com.roxstudio.haxe.ui.RoxGestureAgent;
+import com.roxstudio.haxe.gesture.RoxGestureAgent;
 import com.roxstudio.haxe.ui.UiUtil;
 import com.weiplus.client.model.User;
 import com.weiplus.client.model.AppData;
@@ -71,7 +71,7 @@ class UserScreen extends BaseScreen {
             button.name = b;
             btns.push(button);
         }
-        var bmd = ImageUtil.getBitmapData("res/bg_main_bottom.png");
+        var bmd = ResKeeper.getAssetImage("res/bg_main_bottom.png");
         var npdata = new RoxNinePatchData(new Rectangle(0, 0, bmd.width, bmd.height), bmd);
         var btnpanel = new RoxFlowPane(null, null, UiUtil.LEFT | UiUtil.BOTTOM, btns,
         new RoxNinePatch(npdata), UiUtil.BOTTOM, [ 2 ]);
@@ -113,7 +113,7 @@ class UserScreen extends BaseScreen {
         var bg = new RoxNinePatch(new RoxNinePatchData(new Rectangle(6, 6, 20, 20), new Rectangle(12, 12, 8, 8), bgbmd));
         var panel = new RoxFlowPane(screenWidth - 2 * spacing, 100,
                                     [ UiUtil.bitmap("res/data/head11.png"), UiUtil.staticText("Leody", 0, 30) ], bg, [ 100 ]);
-        var pshadow = new RoxNinePatch(ImageUtil.getNinePatchData("res/shadow6.9.png"));
+        var pshadow = UiUtil.ninePatch("res/shadow6.9.png");
         pshadow.setDimension(panel.width + 3, panel.height + 6);
         panel.rox_move(spacing, spacing);
         pshadow.rox_move(panel.x - 2, panel.y);
@@ -137,9 +137,8 @@ class UserScreen extends BaseScreen {
                 status.appData.image = ss[3];
                 status.appData.type = ss[4];
                 status.appData.label = ss[5];
-                var bmd = ImageUtil.loadBitmapData(ss[3]);
-                status.appData.width = bmd.width;
-                status.appData.height = bmd.height;
+                status.appData.width = Std.parseInt(ss[6]);
+                status.appData.height = Std.parseInt(ss[7]);
                 status.text = ss[2];
                 status.createdAt = Date.fromTime(Date.now().getTime() - Std.random(3600));
                 var postit = new Postit(status, postitw, numCol == 1);
@@ -151,7 +150,7 @@ class UserScreen extends BaseScreen {
         for (i in 0...postits.length) {
             var postit = postits[i];
             if (resetwidth) postit.setWidth(postitw, numCol == 1);
-            var shadow = new RoxNinePatch(ImageUtil.getNinePatchData("res/shadow6.9.png"));
+            var shadow = UiUtil.ninePatch("res/shadow6.9.png");
             shadow.setDimension(postitw + 3, postit.height + 6);
 
             var minh: Float = GameUtil.IMAX, colidx = 0;
@@ -194,7 +193,7 @@ class UserScreen extends BaseScreen {
         var postit: Postit = cast(e.target);
         var status = postit.status;
         var classname = "com.weiplus.apps." + status.appData.type + ".App";
-        startScreen(classname, { image: postit.image.bitmapData, sideLen: Std.parseInt(status.appData.label) });
+        startScreen(classname, { image: postit.image.data, sideLen: Std.parseInt(status.appData.label) });
     }
 
     private inline function animDone(sp: DisplayObject) {
@@ -221,9 +220,11 @@ class UserScreen extends BaseScreen {
                     }
                 }
             case RoxGestureEvent.GESTURE_PAN:
-                main.y = UiUtil.rangeValue(main.y + e.extra.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
+                var pt = RoxGestureAgent.localOffset(main, cast(e.extra));
+                main.y = UiUtil.rangeValue(main.y + pt.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
             case RoxGestureEvent.GESTURE_SWIPE:
-                var desty = UiUtil.rangeValue(main.y + e.extra.y * 2.0, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
+                var pt = RoxGestureAgent.localOffset(main, cast(new Point(e.extra.x * 2.0, e.extra.y * 2.0)));
+                var desty = UiUtil.rangeValue(main.y + pt.y, UiUtil.rangeValue(viewh - mainh, GameUtil.IMIN, 0), 0);
                 agent.startTween(main, 2.0, { y: desty });
         }
     }
@@ -239,16 +240,16 @@ class UserScreen extends BaseScreen {
             case "icon_selected":
                 startScreen(Type.getClassName(SelectedScreen), true);
             case "icon_maker":
-                startScreen(Type.getClassName(MakersScreen), true);
+                startScreen(Type.getClassName(MakerList), true);
             case "icon_account":
 
         }
     }
 
     private static var statuses = [
-    [ "Leody", "res/data/head1.png", "I like the sunshine, do you?", "res/data/9.jpg", "jigsaw", "120" ],
-    [ "Leody", "res/data/head1.png", "Very funny piggy!", "res/data/7.jpg", "image", "" ],
-    [ "Leody", "res/data/head1.png", "This's my friend, is she beautiful?", "res/data/8.jpg", "jigsaw", "110" ]
+    [ "Leody", "http://rox.local/res/data/head1.png", "I like the sunshine, do you?", "http://rox.local/res/data/9.jpg", "jigsaw", "120", "640", "480" ],
+    [ "Leody", "http://rox.local/res/data/head1.png", "Very funny piggy!", "http://rox.local/res/data/7.jpg", "image", "", "338", "720" ],
+    [ "Leody", "http://rox.local/res/data/head1.png", "This's my friend, is she beautiful?", "http://rox.local/res/data/8.jpg", "jigsaw", "110", "580", "580" ]
     ];
 
 }
