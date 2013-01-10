@@ -1,5 +1,6 @@
 package com.roxstudio.haxe.gesture;
 
+import nme.ui.MultitouchInputMode;
 import flash.display.InteractiveObject;
 import nme.display.Sprite;
 import nme.display.DisplayObjectContainer;
@@ -17,6 +18,7 @@ import nme.geom.Point;
 import nme.geom.Rectangle;
 import nme.ui.Multitouch;
 
+using Lambda;
 using com.roxstudio.haxe.game.GfxUtil;
 using com.roxstudio.haxe.ui.UiUtil;
 
@@ -63,6 +65,7 @@ class RoxGestureAgent {
     private var longPressTimer: GenericActuator;
     private var tweener: GenericActuator;
     private var overlay: Sprite; // used in capture mode, to capture events outside the owner
+    private var touchIds: IntHash<Int>;
     /**
      * READY -> begin:BEGIN -> end:tap
      * READY -> begin:BEGIN -> move:MOVE [-> MOVE]: pan
@@ -75,12 +78,14 @@ class RoxGestureAgent {
         owner = inOwner;
         mode = inMode;
         var isTouch = Multitouch.supportsTouchEvents;
+        if (isTouch) Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
         owner.mouseEnabled = true;
         listenEvents = mode == TOUCH_POINT ? (isTouch ? touchEvents : mouseEvents) : (isTouch ? geTouchEvents : geMouseEvents);
         handler = mode == TOUCH_POINT ? (isTouch ? convertTouch : convertMouse) : (isTouch ? onTouch : onMouse);
         for (type in listenEvents) owner.addEventListener(type, handler);
         if (mode == GESTURE_CAPTURE) Lib.current.stage.addEventListener(Event.RESIZE, function(e) { overlay = null; } );
         touchList = new List<TouchPoint>();
+        touchIds = new IntHash<Int>();
         setReady();
     }
 
@@ -116,7 +121,7 @@ class RoxGestureAgent {
     }
 
     private function handleEvent(flags: Int, e: RoxGestureEvent) {
-        trace(">>>t=" + e.target.name+",o="+owner.name+",e="+e);
+//        trace(">>>t=" + e.target.name+",o="+owner.name+",e="+e);
         var sp: InteractiveObject = cast(e.target);
         if (sp != owner) return;
         switch (e.type) {
@@ -158,7 +163,7 @@ class RoxGestureAgent {
     }
 
     private inline static function get_multitouchSupported() : Bool {
-//        trace("multitouchSupported: isTouch=" + Multitouch.supportsTouchEvents + ",maxPoints=" + Multitouch.maxTouchPoints);
+        trace("multitouchSupported: isTouch=" + Multitouch.supportsTouchEvents + ",maxPoints=" + Multitouch.maxTouchPoints);
         return Multitouch.supportsTouchEvents && Multitouch.maxTouchPoints > 1;
     }
 
@@ -176,13 +181,22 @@ class RoxGestureAgent {
     }
 
     private inline function onTouch(e: Dynamic) {
-        var id: Int;
-        if ((id = e.touchPointID) <= 1) {
+        var tid: Int = e.touchPointID, id: Null<Int>;
+//        trace("onTouch:e=" + e +",touchId="+tid);
+        if ((id = touchIds.get(tid)) == null) {
+            id = touchIds.count();
+            touchIds.set(tid, id);
+        }
+        if (id <= 1) {
             if (handleTouch(typeMap.get(e.type), e, id == 0)) e.rox_stopPropagation();
+        }
+        if (e.type == TouchEvent.TOUCH_END) {
+            touchIds.remove(tid);
         }
     }
 
     private inline function onMouse(e: Dynamic) {
+//        trace("onMouse:e=" + e);
         var t: String = e.type;
         if (t == MouseEvent.MOUSE_DOWN || t == MouseEvent.MOUSE_UP || e.buttonDown) {
             if (handleTouch(typeMap.get(t), e, true)) e.rox_stopPropagation();
@@ -190,6 +204,7 @@ class RoxGestureAgent {
     }
 
     private function handleTouch(type: String, e: Dynamic, prim: Bool) : Bool {
+//        trace("type=" + type + ",e=" + e);
         var pt = new TouchPoint(owner, e);
         var tp = prim ? touch0 : touch1;
         if (type == RoxGestureEvent.TOUCH_MOVE && tp != null && tp.sx == pt.sx && tp.sy == pt.sy) return false; // NO MOVE -> skip
