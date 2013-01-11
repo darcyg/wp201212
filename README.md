@@ -1,4 +1,4 @@
 wp201212
 ========
 
-基于haXe+NME的验证性项目，开发中。
+This project is stopped.
